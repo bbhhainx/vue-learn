@@ -1,42 +1,191 @@
-<template>
-  <!-- <HelloWorld /> -->
-  <div class="h-dvh w-screen flex justify-center items-center bg-custom">
-    <!-- <DropBox
-      v-model="is_open"
-      :close="() => (is_open = false)"
-    >
-      <template v-slot:trigger>
-        <button
-          @pointerdown="is_open = true"
-          class="bg-white font-medium text-black px-4 py-2 rounded-xl shadow-lg shadow-slate-200 border border-fuchsia-600"
-        >
-          {{ value ? value : '-- Chọn người dùng --' }}
-        </button>
-      </template>
-      <template v-slot:content>
-        <ul
-          class="p-2 bg-white flex flex-col gap-2 max-h-40 rounded-xl overflow-auto shadow-lg shadow-slate-200 border border-fuchsia-600"
-        >
-          <li
-            class="hover:bg-fuchsia-200 px-6 py-2 cursor-pointer rounded-xl font-medium"
-            v-for="i in 10"
-            @click=";(is_open = false), (value = `Learn about vue ${i}`)"
-          >
-            Learn about vue {{ i }}
-          </li>
-        </ul>
-      </template>
-    </DropBox> -->
-    <VirtualScroll />
-  </div>
-</template>
 <script setup lang="ts">
-// import HelloWorld from './components/HelloWorld.vue'
+import {
+  FlexRender,
+  getCoreRowModel,
+  useVueTable,
+  createColumnHelper,
+} from '@tanstack/vue-table'
 import { ref } from 'vue'
-import DropBox from './components/DropBox.vue'
-import VirtualScroll from './components/VirtualScroll.vue'
 
+type Person = {
+  firstName: string
+  lastName: string
+  age: number
+  visits: number
+  status: string
+  progress: number
+}
+
+const defaultData: Person[] = [
+  {
+    firstName: 'tanner',
+    lastName: 'linsley',
+    age: 24,
+    visits: 100,
+    status: 'In Relationship',
+    progress: 50,
+  },
+  {
+    firstName: 'tandy',
+    lastName: 'miller',
+    age: 40,
+    visits: 40,
+    status: 'Single',
+    progress: 80,
+  },
+  {
+    firstName: 'joe',
+    lastName: 'dirte',
+    age: 45,
+    visits: 20,
+    status: 'Complicated',
+    progress: 10,
+  },
+]
+
+const columnHelper = createColumnHelper<Person>()
+
+const columns = [
+  columnHelper.group({
+    header: 'Name',
+    footer: props => props.column.id,
+    columns: [
+      columnHelper.accessor('firstName', {
+        cell: info => info.getValue(),
+        footer: props => props.column.id,
+      }),
+      columnHelper.accessor(row => row.lastName, {
+        id: 'lastName',
+        cell: info => info.getValue(),
+        header: () => 'Last Name',
+        footer: props => props.column.id,
+      }),
+    ],
+  }),
+  columnHelper.group({
+    header: 'Info',
+    footer: props => props.column.id,
+    columns: [
+      columnHelper.accessor('age', {
+        header: () => 'Age',
+        footer: props => props.column.id,
+      }),
+      columnHelper.group({
+        header: 'More Info',
+        columns: [
+          columnHelper.accessor('visits', {
+            header: () => 'Visits',
+            footer: props => props.column.id,
+          }),
+          columnHelper.accessor('status', {
+            header: 'Status',
+            footer: props => props.column.id,
+          }),
+          columnHelper.accessor('progress', {
+            header: 'Profile Progress',
+            footer: props => props.column.id,
+          }),
+        ],
+      }),
+    ],
+  }),
+]
+
+const data = ref(defaultData)
+
+const rerender = () => {
+  data.value = defaultData
+}
+
+const table = useVueTable({
+  get data() {
+    return data.value
+  },
+  columns,
+  getCoreRowModel: getCoreRowModel(),
+})
 </script>
 
-<style lang="css">
+<template>
+  <div class="p-2">
+    <table>
+      <thead>
+        <tr
+          v-for="headerGroup in table.getHeaderGroups()"
+          :key="headerGroup.id"
+        >
+          <th
+            v-for="header in headerGroup.headers"
+            :key="header.id"
+            :colSpan="header.colSpan"
+          >
+            <FlexRender
+              v-if="!header.isPlaceholder"
+              :render="header.column.columnDef.header"
+              :props="header.getContext()"
+            />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="row in table.getRowModel().rows" :key="row.id">
+          <td v-for="cell in row.getVisibleCells()" :key="cell.id">
+            <FlexRender
+              :render="cell.column.columnDef.cell"
+              :props="cell.getContext()"
+            />
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr
+          v-for="footerGroup in table.getFooterGroups()"
+          :key="footerGroup.id"
+        >
+          <th
+            v-for="header in footerGroup.headers"
+            :key="header.id"
+            :colSpan="header.colSpan"
+          >
+            <FlexRender
+              v-if="!header.isPlaceholder"
+              :render="header.column.columnDef.footer"
+              :props="header.getContext()"
+            />
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="h-4" />
+    <button @click="rerender" class="border p-2">Rerender</button>
+  </div>
+</template>
+
+<style>
+html {
+  font-family: sans-serif;
+  font-size: 14px;
+}
+
+table {
+  border: 1px solid lightgray;
+}
+
+tbody {
+  border-bottom: 1px solid lightgray;
+}
+
+th {
+  border-bottom: 1px solid lightgray;
+  border-right: 1px solid lightgray;
+  padding: 2px 4px;
+}
+
+tfoot {
+  color: gray;
+}
+
+tfoot th {
+  font-weight: normal;
+}
 </style>
