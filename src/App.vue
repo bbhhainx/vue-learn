@@ -36,22 +36,7 @@ import { ref } from 'vue'
 import DropBox from './components/DropBox.vue'
 import VirtualScroll from './components/VirtualScroll.vue'
 
-const value = ref('')
-const is_open = ref(false)
 </script>
 
 <style lang="css">
-.bg-custom {
-  background: #c33764; /* fallback for old browsers */
-  background: -webkit-linear-gradient(
-    to right,
-    #1d2671,
-    #c33764
-  ); /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(
-    to right,
-    #1d2671,
-    #c33764
-  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-}
 </style>
