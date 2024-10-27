@@ -1,0 +1,8 @@
+import { faker } from '@faker-js/faker'
+export function generateMessage() {
+  return {
+    avatar: faker.image.avatarLegacy(),
+    message: faker.lorem.text(),
+  }
+}
+export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJidXNpbmVzc19pZCI6IjY2NWRhOTYxYjdkNjFhYzNhZDQ1N2JhZSIsImJyYW5jaF9pZCI6IjY2NWRhOTYxYjdkNjFhYzNhZDQ1N2JiMSIsImRlcGFydG1lbnRfaWQiOiI2NjVkYTllZWI3ZDYxYWMzYWQ0NTdlNmUiLCJlbXBsb3llZV9pZCI6IjY2NWRlYTM0NDhjNGEzOGMzY2JmZDliNiIsInVzZXJfaWQiOiI2NjEzYWVlOWU3Y2I3ODNiOWM3YmRiOWYiLCJwZXJtaXNzaW9uX2lkIjoiNjY1ZGFhMmFiN2Q2MWFjM2FkNDU3ZWE1IiwieG5vZGUiOiJ0ZW5hbnRfNzQxNDI0MTciLCJpc19vd25lcl9idXNpbmVzcyI6ZmFsc2UsImlhdCI6MTcyMTQwMjIxOSwiZXhwIjoxNzI5MTc4MjE5fQ.E8oElUzf-Kj3dCbNpPs-kJL5CkbOB_XOs4sVVtq3G0Y'

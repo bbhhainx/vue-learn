@@ -1,7 +1,7 @@
 <template>
   <!-- <HelloWorld /> -->
-  <div class="h-[150vh] w-screen flex justify-center items-center bg-custom">
-    <DropBox
+  <div class="h-dvh w-screen flex justify-center items-center bg-custom">
+    <!-- <DropBox
       v-model="is_open"
       :close="() => (is_open = false)"
     >
@@ -26,13 +26,15 @@
           </li>
         </ul>
       </template>
-    </DropBox>
+    </DropBox> -->
+    <VirtualScroll />
   </div>
 </template>
 <script setup lang="ts">
 // import HelloWorld from './components/HelloWorld.vue'
 import { ref } from 'vue'
 import DropBox from './components/DropBox.vue'
+import VirtualScroll from './components/VirtualScroll.vue'
 
 const value = ref('')
 const is_open = ref(false)
