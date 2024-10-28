@@ -1,135 +1,35 @@
-<script setup lang="ts">
-import {
-  FlexRender,
-  getCoreRowModel,
-  useVueTable,
-  createColumnHelper,
-} from '@tanstack/vue-table'
-import { ref } from 'vue'
-
-type Person = {
-  firstName: string
-  lastName: string
-  age: number
-  visits: number
-  status: string
-  progress: number
-}
-
-const defaultData: Person[] = [
-  {
-    firstName: 'tanner',
-    lastName: 'linsley',
-    age: 24,
-    visits: 100,
-    status: 'In Relationship',
-    progress: 50,
-  },
-  {
-    firstName: 'tandy',
-    lastName: 'miller',
-    age: 40,
-    visits: 40,
-    status: 'Single',
-    progress: 80,
-  },
-  {
-    firstName: 'joe',
-    lastName: 'dirte',
-    age: 45,
-    visits: 20,
-    status: 'Complicated',
-    progress: 10,
-  },
-]
-
-const columnHelper = createColumnHelper<Person>()
-
-const columns = [
-  columnHelper.group({
-    header: 'Name',
-    footer: props => props.column.id,
-    columns: [
-      columnHelper.accessor('firstName', {
-        cell: info => info.getValue(),
-        footer: props => props.column.id,
-      }),
-      columnHelper.accessor(row => row.lastName, {
-        id: 'lastName',
-        cell: info => info.getValue(),
-        header: () => 'Last Name',
-        footer: props => props.column.id,
-      }),
-    ],
-  }),
-  columnHelper.group({
-    header: 'Info',
-    footer: props => props.column.id,
-    columns: [
-      columnHelper.accessor('age', {
-        header: () => 'Age',
-        footer: props => props.column.id,
-      }),
-      columnHelper.group({
-        header: 'More Info',
-        columns: [
-          columnHelper.accessor('visits', {
-            header: () => 'Visits',
-            footer: props => props.column.id,
-          }),
-          columnHelper.accessor('status', {
-            header: 'Status',
-            footer: props => props.column.id,
-          }),
-          columnHelper.accessor('progress', {
-            header: 'Profile Progress',
-            footer: props => props.column.id,
-          }),
-        ],
-      }),
-    ],
-  }),
-]
-
-const data = ref(defaultData)
-
-const rerender = () => {
-  data.value = defaultData
-}
-
-const table = useVueTable({
-  get data() {
-    return data.value
-  },
-  columns,
-  getCoreRowModel: getCoreRowModel(),
-})
-</script>
-
 <template>
-  <div class="p-2">
-    <table>
+  <div class="p-2 w-screen h-screen overflow-auto">
+    <table :style="{width: table.getCenterTotalSize() + 'px'}">
       <thead>
         <tr
           v-for="headerGroup in table.getHeaderGroups()"
           :key="headerGroup.id"
         >
           <th
+            class="border border-black relative"
             v-for="header in headerGroup.headers"
             :key="header.id"
             :colSpan="header.colSpan"
+            :style="{ width: header.getSize() + 'px' }"
           >
             <FlexRender
               v-if="!header.isPlaceholder"
               :render="header.column.columnDef.header"
               :props="header.getContext()"
             />
+            <div class="resizer right-0" @mousedown="header.getResizeHandler()?.($event)"></div>
           </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="row in table.getRowModel().rows" :key="row.id">
-          <td v-for="cell in row.getVisibleCells()" :key="cell.id">
+          <td
+            :style="{ width: cell.column.getSize() + 'px' }"
+            class="border border-black"
+            v-for="cell in row.getVisibleCells()"
+            :key="cell.id"
+          >
             <FlexRender
               :render="cell.column.columnDef.cell"
               :props="cell.getContext()"
@@ -161,31 +61,108 @@ const table = useVueTable({
   </div>
 </template>
 
+<script setup lang="ts">
+import {
+  FlexRender,
+  getCoreRowModel,
+  useVueTable,
+  createColumnHelper,
+} from "@tanstack/vue-table";
+import { ref } from "vue";
+import { defaultData, Person } from "./mockdata";
+
+const columnHelper = createColumnHelper<Person>();
+
+const columns = [
+  columnHelper.accessor("id", {
+    header: "ID",
+  }),
+  columnHelper.accessor("name", {
+    header: "Name",
+    cell: (info) => info.getValue(),
+    enableResizing: true,
+    size: 200,
+  }),
+  columnHelper.accessor("age", {
+    header: "Age",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("gender", {
+    header: "Gender",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("email", {
+    header: "Email",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("phone", {
+    header: "Phone",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("address", {
+    header: "Address",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("occupation", {
+    header: "Occupation",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("company", {
+    header: "Company",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("salary", {
+    header: "Salary",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("isActive", {
+    header: "Active",
+    cell: (info) => info.getValue(),
+  }),
+  columnHelper.accessor("joinDate", {
+    header: "Join Date",
+    cell: (info) => info.getValue(),
+  }),
+];
+
+const data = ref(defaultData);
+
+const rerender = () => {
+  data.value = defaultData;
+};
+
+const table = useVueTable({
+  get data() {
+    return data.value;
+  },
+  columns,
+  getCoreRowModel: getCoreRowModel(),
+  columnResizeMode: "onChange",
+  columnResizeDirection: "ltr",
+  debugTable: true,
+  debugHeaders: true,
+  debugColumns: true,
+});
+</script>
+
 <style>
-html {
-  font-family: sans-serif;
-  font-size: 14px;
+.resizer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
 }
+@media (hover: hover) {
+  .resizer {
+    opacity: 0;
+  }
 
-table {
-  border: 1px solid lightgray;
-}
-
-tbody {
-  border-bottom: 1px solid lightgray;
-}
-
-th {
-  border-bottom: 1px solid lightgray;
-  border-right: 1px solid lightgray;
-  padding: 2px 4px;
-}
-
-tfoot {
-  color: gray;
-}
-
-tfoot th {
-  font-weight: normal;
+  *:hover > .resizer {
+    opacity: 1;
+  }
 }
 </style>
