@@ -1,12 +1,14 @@
 <template>
-  <div class="p-80">
-  <Select 
-    :options="options"
-    :get-value="(data:any) => data?.id"
-    :get-label="(data:any) => data?.label"
-    :update="(data:any) => value = data?.label + ' custom'"
-    v-model="value"
-  />
+  <div class="p-[400px]">
+  <div class="w-40">
+    <Select
+      :options="options"
+      :get-value="(data:any) => data?.id"
+      :get-label="(data:any) => data?.label"
+      :update="(data:any) => value = data?.label + ' custom'"
+      v-model:show="value"
+    />
+  </div>
 </div>
 </template>
 
@@ -34,6 +36,8 @@ const options: any[] = [
     label: "Dứa",
   },
 ];
+
+const search = ref("");
 </script>
 
 

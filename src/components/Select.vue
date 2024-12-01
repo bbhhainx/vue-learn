@@ -1,66 +1,80 @@
 <template>
-  <SelectRoot
-    :value="selected"
-    v-on:update:model-value="($event) => select($event)"
-    class="w-60"
+  <ComboboxRoot
+    class="w-full"
+    v-model="selected"
+    v-on:update:model-value="select($event)"
+    v-slot="{ open }"
   >
-    <SelectTrigger
-      class="border w-60 outline-none p-2 rounded-md"
-      aria-label="Customise options"
-    >
-      <SelectValue
-        placeholder="Select a fruit..."
-        class="w-full block text-start"
-      >
-        {{ show }}
-      </SelectValue>
-    </SelectTrigger>
+    <ComboboxAnchor class="w-full text-sm border px-2 py-1 rounded-lg">
+      <ComboboxInput
+        v-show="open"
+        v-model="search"
+        class="w-full text-start focus:outline-none"
+        placeholder="Placeholder..."
+      />
+      <ComboboxTrigger class="w-full text-start" v-show="!open">
+        {{ show || "Chọn" }}
+      </ComboboxTrigger>
+    </ComboboxAnchor>
 
-    <SelectPortal>
-      <SelectContent
-        class="bg-white border rouned-sm relative w-80 p-1 rounded-md"
-        position="popper"
-        :side-offset="5"
-        align="center"
-        :collision-padding="{ top: 0, right: 0, bottom: 0, left: 0 }"
+    <ComboboxPortal>
+      <ComboboxContent
+        class="border p-1 rounded-lg popover-content-width-same-as-its-trigger"
+        :sideOffset="5"
+        :position="'popper'"
       >
-        <SelectViewport>
-          <SelectItem
-            class="select-item outline-none px-2 py-1 rounded-md"
-            :class="{
-              '!bg-blue-500 !text-white':
-                getValue(option) === getValue(selected),
-            }"
-            v-for="(option, index) in options"
-            :key="index"
-            :value="option"
-          >
-            <SelectItemText>
-              {{ getLabel(option) }}
-            </SelectItemText>
-          </SelectItem>
-        </SelectViewport>
-      </SelectContent>
-    </SelectPortal>
-  </SelectRoot>
+        <ComboboxViewport class="p-[5px] w-full">
+          <ComboboxEmpty
+            class="text-mauve8 text-xs font-medium text-center py-2"
+          />
+
+          <ComboboxGroup>
+            <ComboboxItem
+              v-for="(option, index) in options"
+              :key="index"
+              class="select-item"
+              :value="option"
+            >
+              <span>
+                {{ getLabel(option) }}
+              </span>
+            </ComboboxItem>
+          </ComboboxGroup>
+        </ComboboxViewport>
+      </ComboboxContent>
+    </ComboboxPortal>
+  </ComboboxRoot>
 </template>
 
 <script setup lang="ts">
-import { PropType, ref } from "vue";
+import { nextTick, onMounted, PropType, ref } from "vue";
 import {
-  SelectContent,
-  SelectItem,
-  SelectItemText,
-  SelectPortal,
-  SelectRoot,
-  SelectTrigger,
-  SelectValue,
-  SelectViewport,
+  ComboboxAnchor,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxLabel,
+  ComboboxPortal,
+  ComboboxRoot,
+  ComboboxSeparator,
+  ComboboxTrigger,
+  ComboboxViewport,
 } from "radix-vue";
+import { watch } from "vue";
+
+const anchor = ref<any>();
+
+const v = ref("");
 
 const selected = ref<any>({});
 
-const show = defineModel<string>({
+const show = defineModel<string>("show", {
+  default: "",
+});
+const search = defineModel<string>("search", {
   default: "",
 });
 
@@ -91,14 +105,21 @@ const props = defineProps({
   },
 });
 
+function abc() {
+  console.log(anchor.value, anchor.value?.offsetWidth);
+}
+
 function select(data: any) {
   selected.value = data;
   props.update(data);
 }
 </script>
-
 <style>
 .select-item[data-highlighted] {
   background-color: gray;
+}
+
+.popover-content-width-same-as-its-trigger {
+  width: var(--radix-combobox-trigger-width);
 }
 </style>
