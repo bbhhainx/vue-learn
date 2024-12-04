@@ -1,16 +1,29 @@
 <template>
-  <!-- <div class="p-[400px]">
+  <div class="p-[400px]">
     <div class="w-40">
       <Select
-        :options="options"
+        :options="filter_options"
+        :name="'id'"
         :get-value="(data:any) => data?.id"
         :get-label="(data:any) => data?.label"
-        :update="(data:any) => value = data?.label + ' custom'"
+        :update="(data:any) => value = data?.label ? data?.label + ' custom' : ''"
+        :onSearch="() => {
+          console.log(search);
+          filter_options = options.filter((item) => item?.label?.includes(search))
+        }"
         v-model:show="value"
-      />
+        v-model:search="search"
+      >
+        <!-- <template 
+          v-for="option in options" 
+          #[option.id]
+        >
+          <span>{{ option?.label }} 111</span>
+        </template> -->
+      </Select>
     </div>
-  </div> -->
-  <ResizeImage/>
+  </div>
+  <!-- <ResizeImage/> -->
 </template>
 
 <script setup lang="ts">
@@ -38,6 +51,8 @@ const options: any[] = [
     label: "Dứa",
   },
 ];
+
+const filter_options = ref(options);
 
 const search = ref("");
 </script>

@@ -7,14 +7,16 @@
   >
     <ComboboxAnchor class="w-full text-sm border px-2 py-1 rounded-lg">
       <ComboboxInput
-        v-show="open"
+        v-show="open && is_filter"
         v-model="search"
+        @input="start_search"
         class="w-full text-start focus:outline-none"
         placeholder="Placeholder..."
       />
-      <ComboboxTrigger class="w-full text-start" v-show="!open">
-        {{ show || "Chọn" }}
+      <ComboboxTrigger class="w-full text-start" v-show="!open || !is_filter">
+        {{ show || placeholder }}
       </ComboboxTrigger>
+      <p v-if="!isEmpty(selected)" @click="clearSelect">x</p>
     </ComboboxAnchor>
 
     <ComboboxPortal>
@@ -35,9 +37,11 @@
               class="select-item"
               :value="option"
             >
-              <span>
-                {{ getLabel(option) }}
-              </span>
+              <slot :name="option[name] || index">
+                <span>
+                  {{ getLabel(option) }}
+                </span>
+              </slot>
             </ComboboxItem>
           </ComboboxGroup>
         </ComboboxViewport>
@@ -55,15 +59,12 @@ import {
   ComboboxGroup,
   ComboboxInput,
   ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxLabel,
   ComboboxPortal,
   ComboboxRoot,
-  ComboboxSeparator,
   ComboboxTrigger,
   ComboboxViewport,
 } from "radix-vue";
-import { watch } from "vue";
+import { debounce, filter, isEmpty } from "lodash";
 
 const anchor = ref<any>();
 
@@ -103,15 +104,51 @@ const props = defineProps({
     required: true,
     default: () => "",
   },
+  is_filter: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+  filter: {
+    type: Function,
+    required: false,
+    default: () => true,
+  },
+  name: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  placeholder: {
+    type: String,
+    required: false,
+    default: "Chọn",
+  },
+  onSearch: {
+    type: Function,
+    required: false,
+    default: ()=>{},
+  },
+  onClear: {
+    type: Function,
+    required: false,
+    default: () => {},
+  }
 });
 
-function abc() {
-  console.log(anchor.value, anchor.value?.offsetWidth);
-}
+const start_search = debounce(() => {  
+  props.onSearch?.();
+}, 500);
 
 function select(data: any) {
   selected.value = data;
   props.update(data);
+}
+
+function clearSelect(){
+  selected.value = {};
+  props.update({});
+  props.onClear?.();
 }
 </script>
 <style>
