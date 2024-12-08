@@ -5,30 +5,38 @@
     v-on:update:model-value="select($event)"
     v-slot="{ open }"
   >
-    <ComboboxAnchor class="w-full text-sm border px-2 py-1 rounded-lg">
+    <ComboboxAnchor
+      class="w-full flex items-center text-sm border px-2 py-1 rounded-lg group"
+    >
       <ComboboxInput
-        v-show="open && is_filter"
-        v-model="search"
-        @input="start_search"
+        v-show="open && is_search"
+        @input="(e:Event)=>{
+          const TARGET = e.target as HTMLInputElement;
+          search = TARGET.value
+          start_search()
+        }"
         class="w-full text-start focus:outline-none"
         placeholder="Placeholder..."
       />
-      <ComboboxTrigger class="w-full text-start" v-show="!open || !is_filter">
-        {{ show || placeholder }}
+      <ComboboxTrigger class="w-full text-start" v-show="!open || !is_search">
+        {{ show || getShow(selected) || getLabel(selected) || placeholder }}
       </ComboboxTrigger>
-      <p v-if="!isEmpty(selected)" @click="clearSelect">x</p>
+      <ChevronDownIcon v-if="isEmpty(selected)" class="w-4 h-4" />
+      <XMarkIcon
+        v-if="!isEmpty(selected) && !open"
+        class="w-4 h-4 cursor-pointer group-hover:text-red-600"
+        @click="clearSelect"
+      />
     </ComboboxAnchor>
 
     <ComboboxPortal>
       <ComboboxContent
-        class="border p-1 rounded-lg popover-content-width-same-as-its-trigger"
+        class="border p-1 rounded-lg bg-white popover-content-width-same-as-its-trigger"
         :sideOffset="5"
         :position="'popper'"
       >
         <ComboboxViewport class="p-[5px] w-full">
-          <ComboboxEmpty
-            class="text-mauve8 text-xs font-medium text-center py-2"
-          />
+          <ComboboxEmpty class="text-xs font-medium text-center py-2" />
 
           <ComboboxGroup>
             <ComboboxItem
@@ -51,7 +59,15 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onMounted, PropType, ref } from "vue";
+import {
+  nextTick,
+  onMounted,
+  onUnmounted,
+  PropType,
+  ref,
+  watch,
+  WatchStopHandle,
+} from "vue";
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -65,87 +81,155 @@ import {
   ComboboxViewport,
 } from "radix-vue";
 import { debounce, filter, isEmpty } from "lodash";
+import XMarkIcon from "./icons/XMarkIcon.vue";
+import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
+import { fa } from "@faker-js/faker";
 
-const anchor = ref<any>();
-
-const v = ref("");
-
-const selected = ref<any>({});
-
-const show = defineModel<string>("show", {
-  default: "",
-});
-const search = defineModel<string>("search", {
-  default: "",
-});
+let stop_watch: WatchStopHandle | null = null;
 
 const props = defineProps({
+  /** danh sách các option */
   options: {
     type: Array as PropType<any[]>,
     default: () => [],
     required: true,
   },
-  defaultValue: {
+  /** giá trị khởi tạo */
+  default_value: {
     type: Object,
-    default: () => {},
+    default: {},
   },
+  /** cập nhật */
   update: {
     type: Function,
     required: true,
     default: () => {},
   },
+  /** lấy giá trị */
   getValue: {
     type: Function,
     required: true,
     default: () => "",
   },
+  /** lấy hiển thị */
   getLabel: {
     type: Function,
     required: true,
     default: () => "",
   },
-  is_filter: {
+  /** hiển thị giá trị đã chọn */
+  getShow: {
+    type: Function,
+    required: false,
+    default: () => "",
+  },
+  /** bật/tắt tìm kiếm */
+  is_search: {
     type: Boolean,
     required: false,
     default: true,
   },
+  /** hàm tìm kiếm */
   filter: {
     type: Function,
     required: false,
     default: () => true,
   },
+  /** tên của slot */
   name: {
     type: String,
     required: false,
     default: "",
   },
+  /** placeholder */
   placeholder: {
     type: String,
     required: false,
     default: "Chọn",
   },
+  /** hàm tìm kiếm */
   onSearch: {
     type: Function,
     required: false,
-    default: ()=>{},
+    default: () => {},
   },
+  /** hàm xóa */
   onClear: {
     type: Function,
     required: false,
     default: () => {},
-  }
+  },
+  /** key để so sánh giá trị */
+  by: {
+    type: String,
+    required: false,
+    default: "",
+  },
+  /** lắng nghe sự thay đổi giá trị */
+  is_watch_value: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 });
 
-const start_search = debounce(() => {  
+/** giá trị đã chọn */
+const selected = ref<any>(getDefault());
+
+/** giá trị hiển thị */
+const show = defineModel<string>("show", {
+  default: "",
+});
+
+/** giá trị tìm kiếm */
+const search = defineModel<string>("search", {
+  default: "",
+});
+
+/** bắt đầu tìm kiếm */
+const start_search = debounce(() => {
   props.onSearch?.();
 }, 500);
 
+onMounted(() => {
+  if (props.is_watch_value) startWatching();
+});
+
+onUnmounted(() => {
+  stopWatching();
+});
+
+/** bắt đầu lắng nghe sự thay đổi của giá trị */
+function startWatching() {
+  stop_watch = watch(() =>props.default_value, (newValue, oldValue) => {
+    selected.value = getDefault();
+  });
+}
+
+/** ngừng lắng nghe thay đổi giá trị */
+function stopWatching() {
+  if (stop_watch) {
+    stop_watch(); // Dừng watcher
+    stop_watch = null;
+  }
+}
+
+/** chọn giá trị */
 function select(data: any) {
   selected.value = data;
   props.update(data);
 }
 
-function clearSelect(){
+/** lấy giá trị mặc định */
+function getDefault() {
+  if (!props.by) return;
+  return props.options.find(
+    (option) => option[props.by] == props.default_value[props.by]
+  );
+}
+
+/** xóa giá trị đã chọn */
+function clearSelect() {
   selected.value = {};
   props.update({});
   props.onClear?.();
@@ -154,6 +238,11 @@ function clearSelect(){
 <style>
 .select-item[data-highlighted] {
   background-color: gray;
+}
+
+.select-item[data-state="checked"] {
+  background-color: blue;
+  color: white;
 }
 
 .popover-content-width-same-as-its-trigger {
