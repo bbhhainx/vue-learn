@@ -1,6 +1,6 @@
 <template>
   <Editor
-    api-key="qagffr3pkuv17a8on1afax661irst1hbr4e6tbv888sz91jc"
+    api-key="3cjzfm341is43v5qp66rkd0ywogt4d33k63tmzcp76bs6kc8"
     :init="{
       plugins: 'code preview quickbars table image link lists media autoresize help advlist emoticons searchreplace visualchars visualblocks fullscreen accordion anchor advtemplate codesample charmap tableofcontents insertdatetime wordcount',
 			toolbar:'undo redo | blocks | fontsize | fontfamily |bold italic strikethrough forecolor backcolor | image | alignleft aligncenter alignright alignjustify | bullist numlist indent outdent | removeformat | code emoticons preview',
