@@ -14,6 +14,9 @@ importers:
       '@tanstack/vue-table':
         specifier: ^8.20.5
         version: 8.20.5(vue@3.4.31(typescript@5.5.3))
+      '@tinymce/tinymce-vue':
+        specifier: ^5
+        version: 5.1.1(vue@3.4.31(typescript@5.5.3))
       '@vueup/vue-quill':
         specifier: ^1.2.0
         version: 1.2.0(vue@3.4.31(typescript@5.5.3))
@@ -340,6 +343,11 @@ packages:
     resolution: {integrity: sha512-xrFLkOiqLoGwohgr1+Q880hkNdQWqwi19EXzx38iAjVEm1Db3KIAV0aVP57/dnNXU3NO1Vx8wnIHII5J4n1LyA==}
     peerDependencies:
       vue: ^2.7.0 || ^3.0.0
+
+  '@tinymce/tinymce-vue@5.1.1':
+    resolution: {integrity: sha512-iO57HOWesFOhsaqjA5Ea6sDvQBmJJH3/dq00Uvg7metlct2kLF+ctRgoDsetLt6gmeZ7COPftr814/XzqnJ/dg==}
+    peerDependencies:
+      vue: ^3.0.0
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
@@ -669,6 +677,9 @@ packages:
     resolution: {integrity: sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==}
     engines: {node: '>=0.10.0'}
 
+  tinymce@6.8.5:
+    resolution: {integrity: sha512-qAL/FxL7cwZHj4BfaF818zeJJizK9jU5IQzTcSLL4Rj5MaJdiVblEj7aDr80VCV1w9h4Lak9hlnALhq/kVtN1g==}
+
   to-fast-properties@2.0.0:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
@@ -939,6 +950,11 @@ snapshots:
   '@tanstack/vue-virtual@3.8.3(vue@3.4.31(typescript@5.5.3))':
     dependencies:
       '@tanstack/virtual-core': 3.8.3
+      vue: 3.4.31(typescript@5.5.3)
+
+  '@tinymce/tinymce-vue@5.1.1(vue@3.4.31(typescript@5.5.3))':
+    dependencies:
+      tinymce: 6.8.5
       vue: 3.4.31(typescript@5.5.3)
 
   '@types/estree@1.0.5': {}
@@ -1360,6 +1376,8 @@ snapshots:
       has-property-descriptors: 1.0.2
 
   source-map-js@1.2.0: {}
+
+  tinymce@6.8.5: {}
 
   to-fast-properties@2.0.0: {}
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-[400px]">
+  <!-- <div class="p-[400px]">
     <div class="w-40">
       <Select
         :default_value="default_value"
@@ -21,12 +21,12 @@
         v-model:search="search"
         :is_watch_value="true"
       >
-        <!-- <template 
+        <template 
           v-for="option in options" 
           #[option.id]
         >
           <span>{{ option?.label }} 111</span>
-        </template> -->
+        </template>
       </Select>
     </div>
     <button
@@ -38,13 +38,17 @@
     >
       change default
     </button>
-  </div>
+  </div> -->
   <!-- <ResizeImage/> -->
+  <div>
+    <TinyEditorComponent/>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import Select from "./components/Select.vue";
+import TinyEditorComponent from "./components/TinyEditorComponent.vue";
 
 const value = ref("");
 
