@@ -52,7 +52,7 @@
           {{ option.title }}
         </option>
       </select>
-      <button @click="print()">Print</button>
+      <button @click="print1()">Print</button>
     </div>
     <TinyEditorComponent v-model="content" />
     <!-- <Tiny v-model="content"/> -->
@@ -107,6 +107,8 @@ import {
   GHN_A5,
   GHN_80x80,
 } from "./constant";
+
+import print from 'print-js'
 
 const OPTIONS = [
   {
@@ -174,13 +176,13 @@ function replacePlaceholders(template: string, data: any) {
   return template.replace(/\{(.*?)\}/g, (_, key) => data[key] || "");
 }
 
-function print() {
+function print1() {
   let text = `<div style="page-break-inside:avoid;width:calc(100% - 2mm);min-height:calc(${style.value} - 0mm - 0mm - 2mm);padding-top:0mm;padding-bottom:0mm;margin:0 auto"><div style="border:1px dashed #000">${content.value}</div></div>`;
 
   let abc = `<div style="column-width:100%">
             <div style="page-break-inside:avoid;width:calc(100% - 2mm);min-height:calc(${style.value} - 1mm - 1mm - 2mm);padding-top:1mm;padding-bottom:1mm;margin:0 auto" class="fr-view print-label">
               <div style="border:1px dashed #000">${content.value}</div>
             </div>`;
-  printJS({ printable: abc, type: "raw-html", css: "./style.css" });
+  print({ printable: abc, type: "raw-html" });
 }
 </script>
