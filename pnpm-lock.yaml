@@ -11,6 +11,18 @@ importers:
       '@faker-js/faker':
         specifier: ^8.4.1
         version: 8.4.1
+      '@lexical/dragon':
+        specifier: 0.23.1
+        version: 0.23.1
+      '@lexical/history':
+        specifier: 0.23.1
+        version: 0.23.1
+      '@lexical/rich-text':
+        specifier: 0.23.1
+        version: 0.23.1
+      '@lexical/utils':
+        specifier: 0.23.1
+        version: 0.23.1
       '@tanstack/vue-table':
         specifier: ^8.20.5
         version: 8.20.5(vue@3.5.13(typescript@5.7.2))
@@ -26,6 +38,9 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
+      lexical:
+        specifier: ^0.23.1
+        version: 0.23.1
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -248,6 +263,33 @@ packages:
 
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
+
+  '@lexical/clipboard@0.23.1':
+    resolution: {integrity: sha512-MT8IXl1rhTe8VcwnkhgFtWra6sRYNsl/I7nE9aw6QxwvPReKmRDmyBmEIeXwnKSGHRe19OJhu4/A9ciKPyVdMA==}
+
+  '@lexical/dragon@0.23.1':
+    resolution: {integrity: sha512-ZoY9VJDrTpO69sinRhIs3RlPAWviy4mwnC7lqtM77/pVK0Kaknv7z2iDqv+414PKQCgUhyoXp7PfYXu/3yb6LQ==}
+
+  '@lexical/history@0.23.1':
+    resolution: {integrity: sha512-5Vro4bIePw37MwffpvPm56WlwPdlY/u+fVkvXsxdhK9bqiFesmLZhBirokDPvJEMP35V59kzmN5mmWXSYfuRpg==}
+
+  '@lexical/html@0.23.1':
+    resolution: {integrity: sha512-kNkDUaDe/Awypaw8JZn65BzT1gwNj2bNkaGFcmIkXUrTtiqlvgYvKvJeOKLkoAb/i2xq990ZAbHOsJrJm1jMbw==}
+
+  '@lexical/list@0.23.1':
+    resolution: {integrity: sha512-TI3WyWk3avv9uaJwaq8V+m9zxLRgnzXDYNS0rREafnW09rDpaFkpVmDuX+PZVR3NqPlwVt+slWVSBuyfguAFbA==}
+
+  '@lexical/rich-text@0.23.1':
+    resolution: {integrity: sha512-Y77HGxdF5aemjw/H44BXETD5KNeaNdwMRu9P7IrlK7cC1dvvimzL2D6ezbub5i7F1Ef5T0quOXjwK056vrqaKQ==}
+
+  '@lexical/selection@0.23.1':
+    resolution: {integrity: sha512-xoehAURMZJZYf046GHUXiv8FSv5zTobhwDD2dML4fmNHPp9NxugkWHlNUinTK/b+jGgjSYVsqpEKPBmue4ZHdQ==}
+
+  '@lexical/table@0.23.1':
+    resolution: {integrity: sha512-Qs+iuwSVkV4OGTt+JdL9hvyl/QO3X9waH70L5Fxu9JmQk/jLl02tIGXbE38ocJkByfpyk4PrphoXt6l7CugJZA==}
+
+  '@lexical/utils@0.23.1':
+    resolution: {integrity: sha512-yXEkF6fj32+mJblCoP0ZT/vA0S05FA0nRUkVrvGX6sbZ9y+cIzuIbBoHi4z1ytutcWHQrwCK4TsN9hPYBIlb2w==}
 
   '@rollup/rollup-android-arm-eabi@4.29.1':
     resolution: {integrity: sha512-ssKhA8RNltTZLpG6/QNkCSge+7mBQGUqJRisZ2MDQcEGaK93QESEgWK2iOpIDZ7k9zPVkG5AS3ksvD5ZWxmItw==}
@@ -604,6 +646,9 @@ packages:
     resolution: {integrity: sha512-MjYsKHO5O7mCsmRGxWcLWheFqN9DJ/2TmngvjKXihe6efViPqc274+Fx/4fYj/r03+ESvBdTXK0V6tA3rgez1g==}
     engines: {node: '>= 0.4'}
 
+  lexical@0.23.1:
+    resolution: {integrity: sha512-iuS72HcAYUemsCRQCm4XZzkGhZb8a9KagW+ee2TFfkkf9f3ZpUYSrobMpjYVZRkgMOx7Zk5VCPMxm1nouJTfnQ==}
+
   lodash.clonedeep@4.5.0:
     resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
@@ -922,6 +967,58 @@ snapshots:
       '@swc/helpers': 0.5.15
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
+
+  '@lexical/clipboard@0.23.1':
+    dependencies:
+      '@lexical/html': 0.23.1
+      '@lexical/list': 0.23.1
+      '@lexical/selection': 0.23.1
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/dragon@0.23.1':
+    dependencies:
+      lexical: 0.23.1
+
+  '@lexical/history@0.23.1':
+    dependencies:
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/html@0.23.1':
+    dependencies:
+      '@lexical/selection': 0.23.1
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/list@0.23.1':
+    dependencies:
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/rich-text@0.23.1':
+    dependencies:
+      '@lexical/clipboard': 0.23.1
+      '@lexical/selection': 0.23.1
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/selection@0.23.1':
+    dependencies:
+      lexical: 0.23.1
+
+  '@lexical/table@0.23.1':
+    dependencies:
+      '@lexical/clipboard': 0.23.1
+      '@lexical/utils': 0.23.1
+      lexical: 0.23.1
+
+  '@lexical/utils@0.23.1':
+    dependencies:
+      '@lexical/list': 0.23.1
+      '@lexical/selection': 0.23.1
+      '@lexical/table': 0.23.1
+      lexical: 0.23.1
 
   '@rollup/rollup-android-arm-eabi@4.29.1':
     optional: true
@@ -1302,6 +1399,8 @@ snapshots:
       gopd: 1.2.0
       has-tostringtag: 1.0.2
       hasown: 2.0.2
+
+  lexical@0.23.1: {}
 
   lodash.clonedeep@4.5.0: {}
 
