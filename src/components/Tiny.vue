@@ -5,19 +5,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits } from "vue";
+import { ref, onMounted, onBeforeUnmount, defineProps, defineEmits, watch } from "vue";
 
 // Props và emits
 const props = defineProps<{ modelValue: string }>();
 const emit = defineEmits<{ (e: "update:modelValue", value: string): void }>();
 
-const editor = ref<HTMLTextAreaElement | null>(null); // Tham chiếu đến textarea
-
 onMounted(() => {
-  if (editor.value) {
     // Khởi tạo TinyMCE
     tinymce.init({
-      selector: `#${editor.value.id}`, // Sử dụng ID của textarea
+      selector: 'textarea#editor', // Sử dụng ID của textarea
       base_url: "/tinymce/js/tinymce", // Đường dẫn đến thư mục self-hosted TinyMCE
       license_key: "gpl",
       suffix: ".min", // Sử dụng tệp `.min`
@@ -27,21 +24,29 @@ onMounted(() => {
           emit("update:modelValue", editorInstance.getContent());
         });
       },
-      plugins: 'code preview quickbars table image link lists media autoresize help advlist emoticons searchreplace visualchars visualblocks fullscreen accordion anchor advtemplate codesample charmap tableofcontents insertdatetime wordcount',
+      plugins: 'code preview quickbars table image link lists media autoresize help advlist emoticons searchreplace visualchars visualblocks fullscreen accordion anchor codesample charmap insertdatetime wordcount',
 			toolbar:'undo redo | blocks | fontsize | fontfamily |bold italic strikethrough forecolor backcolor | image | alignleft aligncenter alignright alignjustify | bullist numlist indent outdent | removeformat | code emoticons preview',
 			statusbar: false,
 			images_upload_handler: uploadImageHandler,
       
     });
-  }
 });
 
 onBeforeUnmount(() => {
   // Hủy TinyMCE khi component bị xóa
-  if (editor.value && tinymce.get(editor.value.id)) {
-    tinymce.get(editor.value.id)?.destroy();
+  if (tinymce.get('editor')) {
+    tinymce.get('editor')?.destroy();
   }
 });
+
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (tinymce.get('editor')) {
+      tinymce.get('editor')?.setContent(newValue);
+    }
+  }
+);
 
 async function uploadImageHandler(blobInfo:any, success:any) {
   const formData = new FormData();

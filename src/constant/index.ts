@@ -578,7 +578,7 @@ export const GHN_80x80 = `<div class="ghn-80x80-label">
 <div>K&iacute; t&ecirc;n</div>
 <div>X&aacute;c nhận h&agrave;ng nguy&ecirc;n vẹn</div>
 <div align="center">
-<div><img src="../../../static/img/print_logo_ghn_3.png" width="60px" /></div>
+<div><img src="/image/print_logo_ghn_3.png" width="60px" /></div>
 </div>
 <div>1/1</div>
 </div>

@@ -2,7 +2,7 @@
   <Editor
     api-key="3cjzfm341is43v5qp66rkd0ywogt4d33k63tmzcp76bs6kc8"
     :init="{
-      plugins: 'code preview quickbars table image link lists media autoresize help advlist emoticons searchreplace visualchars visualblocks fullscreen accordion anchor advtemplate codesample charmap tableofcontents insertdatetime wordcount',
+      plugins: 'code preview quickbars table image link lists media autoresize help advlist emoticons searchreplace visualchars visualblocks fullscreen accordion anchor codesample charmap insertdatetime wordcount',
 			toolbar:'undo redo | blocks | fontsize | fontfamily |bold italic strikethrough forecolor backcolor | image | alignleft aligncenter alignright alignjustify | bullist numlist indent outdent | removeformat | code emoticons preview',
 			statusbar: false,
 			images_upload_handler:uploadImageHandler

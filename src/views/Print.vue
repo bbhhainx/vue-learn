@@ -54,16 +54,16 @@
       </select>
       <button @click="print1()">Print</button>
     </div>
-    <TinyEditorComponent v-model="content" />
-    <!-- <Tiny v-model="content"/> -->
+    <!-- <TinyEditorComponent v-model="content" /> -->
+    <Tiny v-model="content"/>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
 import Select from "./components/Select.vue";
-import TinyEditorComponent from "./components/TinyEditorComponent.vue";
-import Tiny from "./components/Tiny.vue";
+import TinyEditorComponent from "../components/TinyEditorComponent.vue";
+import Tiny from "../components/Tiny.vue";
 
 const value = ref("");
 
