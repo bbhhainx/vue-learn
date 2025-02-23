@@ -56,6 +56,7 @@
     </div>
     <!-- <TinyEditorComponent v-model="content" /> -->
     <Tiny v-model="content"/>
+    {{ content }}
   </div>
 </template>
 

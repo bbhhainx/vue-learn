@@ -14,6 +14,7 @@
 <script setup lang="ts">
 import Editor from "@tinymce/tinymce-vue";
 async function uploadImageHandler(blobInfo:any, success:any) {
+  
   const formData = new FormData();
   formData.append("file", blobInfo.blob(), blobInfo.filename()); // Đính kèm file ảnh
 

@@ -42,17 +42,18 @@ onBeforeUnmount(() => {
 watch(
   () => props.modelValue,
   (newValue) => {
-    if (tinymce.get('editor')) {
+    
+    if (tinymce.get('editor') && newValue !== tinymce.get('editor')?.getContent()) {
       tinymce.get('editor')?.setContent(newValue);
     }
   }
 );
 
-async function uploadImageHandler(blobInfo:any, success:any) {
+async function uploadImageHandler(blobInfo:any, progress:any) {
   const formData = new FormData();
   formData.append("file", blobInfo.blob(), blobInfo.filename()); // Đính kèm file ảnh
 
-	console.log(blobInfo);
+	console.log('https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg')
 	return 'https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg'
 }
 </script>
