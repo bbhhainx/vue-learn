@@ -1,44 +1,48 @@
 <template>
-  <div ref="dropdownRef" class="relative w-64">
+  <div ref="dropdown_ref" class="relative w-64">
     <div
       class="flex justify-between items-center border rounded-lg cursor-pointer"
       @click="clearSearch"
-      @keydown.esc="isOpen = false"
+      @keydown.esc="is_open = false"
       @keydown.down.prevent="highlightNext"
       @keydown.up.prevent="highlightPrev"
       @keydown.enter.prevent="selectHighlighted"
       tabindex="0"
     >
-      <!-- @keydown.enter.stop="toggleDropdown" -->
       <input
         type="text"
         class="w-full border-none outline-none cursor-pointer p-2"
         v-model="search"
-        :placeholder="selected ? getOptionLabel(selected) : 'Select option'"
-        @input="isOpen = true"
+        :placeholder="selected_label || 'Select option'"
+        @input="is_open = true"
       />
-      <ChevronDownIcon class="w-5 h-5 mr-2" />
+      <div class="flex items-center">
+        <XMarkIcon
+          v-if="clearable && value"
+          class="w-5 h-5 mr-2"
+          @click.stop="clearSelection"
+        />
+        <ChevronDownIcon v-else class="w-5 h-5 mr-2" />
+      </div>
     </div>
     <transition name="fade-slide">
       <div
-        v-if="isOpen"
+        v-if="is_open"
         class="absolute w-full bg-white border rounded-lg mt-2 p-2 shadow-lg"
         @click.stop
       >
-        <ul ref="dropdownListRef" class="max-h-40 overflow-y-auto mt-2">
+        <ul ref="dropdown_list_ref" class="max-h-40 overflow-y-auto mt-2">
           <li
             v-for="(option, index) in filteredOptions"
-            :key="getOptionValue(option)"
+            :key="customValue(option)"
             class="flex justify-between items-center p-2 hover:bg-gray-100 cursor-pointer"
-            :class="{ 'bg-gray-200': index === highlightedIndex }"
+            :class="{ 'bg-gray-200': index === highlighted_index }"
             @click="selectOption(option)"
-            @mouseover="highlightedIndex = index"
+            @mouseover="highlighted_index = index"
           >
-            {{ getOptionLabel(option) }}
+            {{ customLabel(option) }}
             <CheckIcon
-              v-if="
-                selected && getOptionValue(selected) === getOptionValue(option)
-              "
+              v-if="value && value === customValue(option)"
               class="w-4 h-4 text-blue-500"
             />
           </li>
@@ -52,96 +56,65 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
 import CheckIcon from "./icons/CheckIcon.vue";
+import XMarkIcon from "./icons/XMarkIcon.vue";
 
-type Option = string | { label: string; value: number };
+type Option = any;
 
-const options = ref<Option[]>([
-  "Option 1",
-  { label: "Option 2", value: 2 },
-  { label: "Option 3", value: 3 },
-  "Option 4",
-  { label: "Option 5", value: 5 },
-]);
-const selected = ref<Option | null>(null);
-const isOpen = ref<boolean>(false);
-const search = ref<string>("");
-const highlightedIndex = ref<number>(-1);
-const dropdownRef = ref<HTMLElement | null>(null);
-const dropdownListRef = ref<HTMLElement | null>(null);
+const props = defineProps({
+  options: {
+    type: Array as () => Option[],
+    required: true,
+  },
+  customLabel: {
+    type: Function,
+    required: true,
+  },
+  customValue: {
+    type: Function,
+    required: true,
+  },
+  clearable: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+});
 
-const getOptionLabel = (option: Option): string => {
-  return typeof option === "string" ? option : option.label;
-};
+/** giá trị đã chọn của select */
+const value = defineModel<string | null>({
+  default: null,
+});
 
-const getOptionValue = (option: Option): string | number => {
-  return typeof option === "string" ? option : option.value;
-};
+/** từ khóa tìm kiếm */
+const search = defineModel<string>("search", {
+  default: "",
+});
 
+/** đóng mở dropbox */
+const is_open = ref<boolean>(false);
+
+/** index của option đang focus */
+const highlighted_index = ref<number>(-1);
+
+/** ref đến dropdown */
+const dropdown_ref = ref<HTMLElement | null>(null);
+
+/** ref đến list trong dropdown */
+const dropdown_list_ref = ref<HTMLElement | null>(null);
+
+/** danh sách option được lọc */
 const filteredOptions = computed<Option[]>(() => {
-  return options.value.filter((opt) =>
-    getOptionLabel(opt).toLowerCase().includes(search.value.toLowerCase())
+  return props.options.filter((opt) =>
+    props.customLabel(opt).toLowerCase().includes(search.value.toLowerCase())
   );
 });
 
-const selectOption = (option: Option): void => {
-  selected.value = option;
-  search.value = getOptionLabel(option);
-  isOpen.value = false;
-  highlightedIndex.value = -1;
-};
-
-const toggleDropdown = (): void => {
-  isOpen.value = !isOpen.value;
-  highlightedIndex.value = -1;
-};
-
-const clearSearch = (): void => {
-  search.value = "";
-  isOpen.value = true;
-};
-
-const scrollToHighlighted = (): void => {
-  nextTick(() => {
-    if (dropdownListRef.value) {
-      const items = dropdownListRef.value.querySelectorAll("li");
-      const highlightedItem = items[highlightedIndex.value];
-      if (highlightedItem) {
-        highlightedItem.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-      }
-    }
-  });
-};
-
-const highlightNext = (): void => {
-  if (highlightedIndex.value < filteredOptions.value.length - 1) {
-    highlightedIndex.value++;
-    scrollToHighlighted();
-  }
-};
-
-const highlightPrev = (): void => {
-  if (highlightedIndex.value > 0) {
-    highlightedIndex.value--;
-    scrollToHighlighted();
-  }
-};
-
-const selectHighlighted = (e: KeyboardEvent): void => {
-  if (highlightedIndex.value >= 0) {
-    selectOption(filteredOptions.value[highlightedIndex.value]);
-    const inputElement = e.target as HTMLInputElement;
-    inputElement.blur();
-  }
-};
-
-const closeOnClickOutside = (event: Event): void => {
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-    isOpen.value = false;
-  }
-};
+/** label của option đã chọn */
+const selected_label = computed<string>(() => {
+  return props.customLabel(
+    props.options.find((opt) => props.customValue(opt) === value.value)
+  );
+});
 
 onMounted(() => {
   document.addEventListener("click", closeOnClickOutside);
@@ -150,6 +123,104 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener("click", closeOnClickOutside);
 });
+
+/** chọn option */
+function selectOption(option: Option): void {
+  // lưu giá trị của option đã chọn
+  value.value = props.customValue(option);
+
+  // lưu hiển thị của giá trị tìm kiếm vào input
+  search.value = props.customLabel(option);
+
+  // đóng dropbox
+  is_open.value = false;
+
+  // reset vị trí option được focus
+  highlighted_index.value = -1;
+}
+
+/** xóa tìm kiếm */
+function clearSearch(): void {
+  search.value = "";
+  is_open.value = true;
+}
+
+/** xóa option đã chọn */
+function clearSelection(): void {
+  value.value = null;
+  search.value = "";
+}
+
+/** scroll đến option đang focus */
+
+function scrollToHighlighted(): void {
+  nextTick(() => {
+    // nếu không có list thì thôi
+    if (!dropdown_list_ref.value) return;
+    /** tất cả các options đang chưa trong list */
+    const ITEMS = dropdown_list_ref.value.querySelectorAll("li");
+
+    /** option đang focus */
+    const HIGHLIGHTED_ITEM = ITEMS[highlighted_index.value];
+
+    // nếu không có thì thôi
+    if (!HIGHLIGHTED_ITEM) return;
+
+    // scroll tới thẻ đang được focus đó
+    HIGHLIGHTED_ITEM.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  });
+}
+
+/** focus tới option tiếp theo */
+function highlightNext(): void {
+  // nếu index của option đang focus là cuối cùng thì thôi
+  if (highlighted_index.value >= filteredOptions.value.length - 1) return;
+
+  // tăng index lên 1
+  highlighted_index.value++;
+
+  // scroll tới option được focus
+  scrollToHighlighted();
+}
+
+/** focus tới option phía trước */
+function highlightPrev(): void {
+  // nếu là option đầu danh sách thì thôi
+  if (highlighted_index.value <= 0) return;
+
+  // giảm index đi 1
+  highlighted_index.value--;
+
+  // scroll tới option được focus
+  scrollToHighlighted();
+}
+
+/** chọn option đang focus */
+function selectHighlighted(e: KeyboardEvent): void {
+  // nếu là không focus option nào thì thôi
+  if (highlighted_index.value < 0) return;
+
+  // chọn option dựa vào index của option đang được focus
+  selectOption(filteredOptions.value[highlighted_index.value]);
+
+  // out focus input search
+  const INPUT = e.target as HTMLInputElement;
+  INPUT.blur();
+}
+
+/** hàm click bên ngoài select thì tắt */
+function closeOnClickOutside(event: Event): void {
+  // nếu click không phải bên trong select thì tắt
+  if (
+    dropdown_ref.value &&
+    !dropdown_ref.value.contains(event.target as Node)
+  ) {
+    is_open.value = false;
+  }
+}
 </script>
 
 <style>

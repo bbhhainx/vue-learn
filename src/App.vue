@@ -2,19 +2,49 @@
   <!-- <LexicalEditor /> -->
   <!-- <Print /> -->
 
-
   <!-- <button v-for="item in TEST" @click="loadTemplate(item)">{{ item }}</button>
 
   <div v-html="template_html"></div> -->
-  <CustomSelectV2 />
+  <CustomSelectV2
+    v-model="value"
+    :options="LIST"
+    :clearable="true"
+    :custom-label="(option:any) => option?.label"
+    :custom-value="(option:any) => option?.value"
+  />
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import CustomSelectV2 from "./components/CustomSelectV2.vue";
+
+const LIST = [
+  {
+    label: "option 1",
+    value: "1",
+  },
+  {
+    label: "option 2",
+    value: "2",
+  },
+  {
+    label: "option 3",
+    value: "3",
+  },
+  {
+    label: "option 4",
+    value: "4",
+  },
+];
+
+const value = ref("");
+</script>
+<!-- <script setup lang="ts">
+import { onMounted, ref } from "vue";
 
 import Print from "./views/Print.vue";
 import LexicalEditor from "./components/LexicalEditor.vue";
-import CustomSelectV2 from "./components/CustomSelectV2.vue";
+
 
 /** các template mẫu sẵn */
 const DATAS = import.meta.glob('/src/data/*.html', {
@@ -48,4 +78,4 @@ async function loadTemplate(name: string) {
     console.error("Không tìm thấy template:", PATH);
   }
 }
-</script>
+</script> -->
