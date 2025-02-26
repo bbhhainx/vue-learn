@@ -6,17 +6,32 @@
 
   <div v-html="template_html"></div> -->
   <CustomSelectV2
-    v-model="value"
-    :options="LIST"
+    :options="list"
     :clearable="true"
-    :custom-label="(option:any) => option?.label"
-    :custom-value="(option:any) => option?.value"
-  />
+    :custom-label="(option:any) => option?.address_name"
+    :custom-value="(option:any) => ''"
+    :custom-selected-label="abc"
+    :on-search="onSearch"
+    :onSelect="(option:any) => {
+      console.log(option?.address);
+      
+      value = option?.address
+    }"
+    :onClear="() => {
+      value = '';
+      list= []
+    }"
+  >
+    <template v-for="option, index in list" #[index]>
+      <span>{{ option?.address_name + 'custome' }}</span>
+    </template>
+  </CustomSelectV2>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CustomSelectV2 from "./components/CustomSelectV2.vue";
+import { debounce } from "lodash";
 
 const LIST = [
   {
@@ -38,6 +53,44 @@ const LIST = [
 ];
 
 const value = ref("");
+
+const list = ref<any[]>([]);
+
+const start_search = debounce(() => {
+  search();
+}, 1000);
+
+function abc(option: any) {
+  console.log(value.value);
+
+  return value.value;
+}
+
+async function search() {
+  try {
+    const res = await fetch(
+      "https://api-product.merchant.vn/locations/detect_address_v2",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          address: value.value,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await res.json();
+    if(data?.length) list.value = data;
+  } catch (error) {}
+}
+
+function onSearch(search: string) {
+  value.value = search;
+  console.log("search", search);
+  start_search();
+}
 </script>
 <!-- <script setup lang="ts">
 import { onMounted, ref } from "vue";

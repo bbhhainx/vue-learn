@@ -12,13 +12,19 @@
       <input
         type="text"
         class="w-full border-none outline-none cursor-pointer p-2"
-        v-model="search"
+        :value="search"
         :placeholder="selected_label || 'Select option'"
-        @input="is_open = true"
+        @focus="is_open = true"
+        @input="(e) => {
+          const TARGET = e.target as HTMLInputElement
+          search = TARGET.value
+          onSearch(search)
+        }"
+        @blur="search = selected_label"
       />
       <div class="flex items-center">
         <XMarkIcon
-          v-if="clearable && value"
+          v-if="clearable && (value || selected_label)"
           class="w-5 h-5 mr-2"
           @click.stop="clearSelection"
         />
@@ -35,16 +41,20 @@
           <li
             v-for="(option, index) in filteredOptions"
             :key="customValue(option)"
-            class="flex justify-between items-center p-2 hover:bg-gray-100 cursor-pointer"
+            class="hover:bg-gray-100 cursor-pointer"
             :class="{ 'bg-gray-200': index === highlighted_index }"
             @click="selectOption(option)"
             @mouseover="highlighted_index = index"
           >
-            {{ customLabel(option) }}
-            <CheckIcon
-              v-if="value && value === customValue(option)"
-              class="w-4 h-4 text-blue-500"
-            />
+            <slot :name="index">
+              <div class="flex justify-between items-center p-2">
+                {{ customLabel(option) }}
+                <CheckIcon
+                  v-if="value && value === customValue(option)"
+                  class="w-4 h-4 text-blue-500"
+                />
+              </div>
+            </slot>
           </li>
         </ul>
       </div>
@@ -78,6 +88,25 @@ const props = defineProps({
     required: false,
     default: false,
   },
+  onSearch: {
+    type: Function,
+    required: false,
+    default: () => {},
+  },
+  customSelectedLabel: {
+    type: Function,
+    required: false,
+  },
+  onSelect: {
+    type: Function,
+    required: false,
+    default: () => {},
+  },
+  onClear: {
+    type: Function,
+    required: false,
+    default: () => {},
+  },
 });
 
 /** giá trị đã chọn của select */
@@ -104,13 +133,19 @@ const dropdown_list_ref = ref<HTMLElement | null>(null);
 
 /** danh sách option được lọc */
 const filteredOptions = computed<Option[]>(() => {
-  return props.options.filter((opt) =>
-    props.customLabel(opt).toLowerCase().includes(search.value.toLowerCase())
-  );
+  // return props.options.filter((opt) =>
+  //   props.customLabel(opt).toLowerCase().includes(search.value.toLowerCase())
+  // );
+
+  return props.options;
 });
 
 /** label của option đã chọn */
 const selected_label = computed<string>(() => {
+  if (props.customSelectedLabel) {
+    return props.customSelectedLabel();
+  }
+
   return props.customLabel(
     props.options.find((opt) => props.customValue(opt) === value.value)
   );
@@ -130,13 +165,17 @@ function selectOption(option: Option): void {
   value.value = props.customValue(option);
 
   // lưu hiển thị của giá trị tìm kiếm vào input
-  search.value = props.customLabel(option);
+  search.value = props.customSelectedLabel
+    ? props.customSelectedLabel()
+    : props.customLabel(option);
 
   // đóng dropbox
   is_open.value = false;
 
   // reset vị trí option được focus
   highlighted_index.value = -1;
+
+  props.onSelect(option);
 }
 
 /** xóa tìm kiếm */
@@ -149,6 +188,8 @@ function clearSearch(): void {
 function clearSelection(): void {
   value.value = null;
   search.value = "";
+
+  props.onClear();
 }
 
 /** scroll đến option đang focus */
