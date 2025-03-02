@@ -5,7 +5,7 @@
   <!-- <button v-for="item in TEST" @click="loadTemplate(item)">{{ item }}</button>
 
   <div v-html="template_html"></div> -->
-  <CustomSelectV2
+  <!-- <CustomSelectV2
     :options="list"
     :clearable="true"
     :custom-label="(option:any) => option?.address_name"
@@ -23,9 +23,19 @@
     }"
   >
     <template v-for="option, index in list" #[index]>
-      <span>{{ option?.address_name + 'custome' }}</span>
+      <span>{{ option?.address_name + ' custome' }}</span>
     </template>
-  </CustomSelectV2>
+  </CustomSelectV2> -->
+  <div class="ml-2">
+    <CustomSelectV2
+      :options="LIST"
+      :custom-label="(option:any) => option?.label"
+      :custom-value="(option:any) => option?.value"
+      :searchable="false"
+      :teleport="'body'"
+    >
+    </CustomSelectV2>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -1,7 +1,7 @@
 <template>
   <div ref="dropdown_ref" class="relative w-64">
     <div
-      class="flex justify-between items-center border rounded-lg cursor-pointer"
+      class="flex justify-between items-center border rounded-lg cursor-pointer outline-none"
       @click="clearSearch"
       @keydown.esc="is_open = false"
       @keydown.down.prevent="highlightNext"
@@ -9,18 +9,27 @@
       @keydown.enter.prevent="selectHighlighted"
       tabindex="0"
     >
+      <p 
+        v-show="!is_open || !searchable" 
+        class="w-full p-2"
+      >
+        {{ selected_label || props.placeholder }}
+      </p>
       <input
+        v-if="searchable"
+        ref="input_ref"
+        :class="{
+          '!w-0': !is_open,
+        }"
         type="text"
-        class="w-full border-none outline-none cursor-pointer p-2"
+        class="w-full border-none outline-none cursor-pointer p-2 rounded-lg"
         :value="search"
-        :placeholder="selected_label || 'Select option'"
-        @focus="is_open = true"
+        :placeholder="selected_label || props.placeholder"
         @input="(e) => {
           const TARGET = e.target as HTMLInputElement
           search = TARGET.value
-          onSearch(search)
+          onSearch?.(search)
         }"
-        @blur="search = selected_label"
       />
       <div class="flex items-center">
         <XMarkIcon
@@ -31,15 +40,17 @@
         <ChevronDownIcon v-else class="w-5 h-5 mr-2" />
       </div>
     </div>
+    
     <transition name="fade-slide">
+      <Teleport :to="teleport ? 'body' : null">
       <div
         v-if="is_open"
         class="absolute w-full bg-white border rounded-lg mt-2 p-2 shadow-lg"
-        @click.stop
+        :style="dropdown_style"
       >
-        <ul ref="dropdown_list_ref" class="max-h-40 overflow-y-auto mt-2">
+        <ul ref="dropdown_list_ref" class="max-h-40 overflow-y-auto">
           <li
-            v-for="(option, index) in filteredOptions"
+            v-for="(option, index) in filtered_options"
             :key="customValue(option)"
             class="hover:bg-gray-100 cursor-pointer"
             :class="{ 'bg-gray-200': index === highlighted_index }"
@@ -58,6 +69,7 @@
           </li>
         </ul>
       </div>
+      </Teleport>
     </transition>
   </div>
 </template>
@@ -75,6 +87,11 @@ const props = defineProps({
     type: Array as () => Option[],
     required: true,
   },
+  placeholder: {
+    type: String,
+    required: false,
+    default: "Chọn",
+  },
   customLabel: {
     type: Function,
     required: true,
@@ -83,17 +100,26 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  customSelectedLabel: {
+    type: Function,
+    required: false,
+  },
+  teleport:{
+    type: String,
+    required: false,
+    default: "",
+  },
   clearable: {
     type: Boolean,
     required: false,
     default: false,
   },
-  onSearch: {
-    type: Function,
+  searchable: {
+    type: Boolean,
     required: false,
-    default: () => {},
+    default: true,
   },
-  customSelectedLabel: {
+  onSearch: {
     type: Function,
     required: false,
   },
@@ -110,8 +136,8 @@ const props = defineProps({
 });
 
 /** giá trị đã chọn của select */
-const value = defineModel<string | null>({
-  default: null,
+const value = defineModel<string>({
+  default: "",
 });
 
 /** từ khóa tìm kiếm */
@@ -131,13 +157,19 @@ const dropdown_ref = ref<HTMLElement | null>(null);
 /** ref đến list trong dropdown */
 const dropdown_list_ref = ref<HTMLElement | null>(null);
 
-/** danh sách option được lọc */
-const filteredOptions = computed<Option[]>(() => {
-  // return props.options.filter((opt) =>
-  //   props.customLabel(opt).toLowerCase().includes(search.value.toLowerCase())
-  // );
+/** ref đến input */
+const input_ref = ref<HTMLElement | null>(null);
 
-  return props.options;
+/** style của dropdown */
+const dropdown_style = ref({})
+
+/** danh sách option được lọc */
+const filtered_options = computed<Option[]>(() => {
+  if (props.onSearch) return props.options;
+  
+  return props.options.filter((opt) =>
+    props.customLabel(opt)?.toLowerCase().includes(search.value?.toLowerCase())
+  );
 });
 
 /** label của option đã chọn */
@@ -153,21 +185,24 @@ const selected_label = computed<string>(() => {
 
 onMounted(() => {
   document.addEventListener("click", closeOnClickOutside);
+  if (props.teleport) {
+    window.addEventListener("scroll", updateDropdownPosition);
+    window.addEventListener("resize", updateDropdownPosition);
+  }
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", closeOnClickOutside);
+  if (props.teleport) {
+    window.removeEventListener("scroll", updateDropdownPosition);
+    window.removeEventListener("resize", updateDropdownPosition);
+  }
 });
 
 /** chọn option */
 function selectOption(option: Option): void {
   // lưu giá trị của option đã chọn
   value.value = props.customValue(option);
-
-  // lưu hiển thị của giá trị tìm kiếm vào input
-  search.value = props.customSelectedLabel
-    ? props.customSelectedLabel()
-    : props.customLabel(option);
 
   // đóng dropbox
   is_open.value = false;
@@ -182,13 +217,14 @@ function selectOption(option: Option): void {
 function clearSearch(): void {
   search.value = "";
   is_open.value = true;
+  input_ref.value?.focus();
+  updateDropdownPosition()
 }
 
 /** xóa option đã chọn */
 function clearSelection(): void {
-  value.value = null;
+  value.value = "";
   search.value = "";
-
   props.onClear();
 }
 
@@ -218,7 +254,7 @@ function scrollToHighlighted(): void {
 /** focus tới option tiếp theo */
 function highlightNext(): void {
   // nếu index của option đang focus là cuối cùng thì thôi
-  if (highlighted_index.value >= filteredOptions.value.length - 1) return;
+  if (highlighted_index.value >= filtered_options.value.length - 1) return;
 
   // tăng index lên 1
   highlighted_index.value++;
@@ -245,7 +281,7 @@ function selectHighlighted(e: KeyboardEvent): void {
   if (highlighted_index.value < 0) return;
 
   // chọn option dựa vào index của option đang được focus
-  selectOption(filteredOptions.value[highlighted_index.value]);
+  selectOption(filtered_options.value[highlighted_index.value]);
 
   // out focus input search
   const INPUT = e.target as HTMLInputElement;
@@ -260,6 +296,19 @@ function closeOnClickOutside(event: Event): void {
     !dropdown_ref.value.contains(event.target as Node)
   ) {
     is_open.value = false;
+  }
+}
+
+/** hàm tính toán vị trí của dropdown */
+function updateDropdownPosition() {
+  if (props.teleport && dropdown_ref.value) {
+    const rect = dropdown_ref.value.getBoundingClientRect();
+    dropdown_style.value = {
+      position: "absolute",
+      top: `${rect.bottom + window.scrollY}px`,
+      left: `${rect.left + window.scrollX}px`,
+      width: `${rect.width}px`,
+    };
   }
 }
 </script>
