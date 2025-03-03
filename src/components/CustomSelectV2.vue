@@ -42,7 +42,7 @@
     </div>
     
     <transition name="fade-slide">
-      <Teleport :to="teleport ? 'body' : null">
+      <Teleport :to="teleport || 'body'" :disabled="!teleport">
       <div
         v-if="is_open"
         class="absolute w-full bg-white border rounded-lg mt-2 p-2 shadow-lg"

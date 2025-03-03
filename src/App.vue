@@ -26,19 +26,27 @@
       <span>{{ option?.address_name + ' custome' }}</span>
     </template>
   </CustomSelectV2> -->
-  <div class="ml-2">
+  <!-- <div class="ml-2">
     <CustomSelectV2
       :options="LIST"
       :custom-label="(option:any) => option?.label"
       :custom-value="(option:any) => option?.value"
-      :searchable="false"
+      :searchable="true"
       :teleport="'body'"
     >
     </CustomSelectV2>
-  </div>
+  </div> -->
+  <VirtualList :items="listItems" :item-height="30" />
 </template>
 
 <script setup lang="ts">
+import VirtualList from './components/VirtualList.vue';
+
+
+const listItems = Array.from({ length: 1000 }, (_, i) => `Item ${i + 1}`);
+</script>
+
+<!-- <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CustomSelectV2 from "./components/CustomSelectV2.vue";
 import { debounce } from "lodash";
@@ -101,7 +109,7 @@ function onSearch(search: string) {
   console.log("search", search);
   start_search();
 }
-</script>
+</script> -->
 <!-- <script setup lang="ts">
 import { onMounted, ref } from "vue";
 
