@@ -1,111 +1,95 @@
 <template>
   <div
     ref="container"
-    class="virtual-list-container"
+    class="relative overflow-auto h-full"
     @scroll="handleScroll"
   >
     <div
-      class="virtual-list-phantom"
-      :style="{ height: totalHeight + 'px' }"
+      class="absolute top-0 left-0 right-0"
+      :style="{ height: total_height + 'px' }"
     ></div>
-    <div
-      class="virtual-list"
-      :style="{ transform: `translateY(${startOffset}px)` }"
+    <ul
+      class="absolute top-0 left-0 right-0"
+      :style="{ transform: `translateY(${start_offset}px)` }"
     >
-      <div
-        v-for="(item, index) in visibleItems"
+      <li
+        v-for="(item, index) in visible_items"
         :key="index"
-        class="virtual-list-item"
-        :style="{ height: itemHeight + 'px' }"
+        :style="{ height: item_height + 'px' }"
       >
-        {{ item }}
-      </div>
-    </div>
+        <slot name="item" :item="item">
+          {{ item }}
+        </slot>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted } from "vue";
 
-// Định nghĩa props với TypeScript
+// Định nghĩa interface generic cho props
 interface Props {
-  items: string[]; // Mảng các mục trong danh sách
-  itemHeight: number; // Chiều cao của mỗi mục (pixel)
+  /** Mảng các mục với kiểu T linh hoạt */
+  items: unknown[]; 
+  /** Chiều cao của mỗi mục (pixel) */
+  item_height: number; 
+  /** Số mục render thêm bên trên và bên dưới viewport (overscanning) */
+  overscan_count:number;
 }
 
-// Thiết lập props với giá trị mặc định
+/** Thiết lập props với generic và giá trị mặc định */
 const props = withDefaults(defineProps<Props>(), {
   items: () => [],
-  itemHeight: 30,
+  item_height: 30,
+  overscan_count: 5
 });
 
-// State
-const container = ref<HTMLElement | null>(null); // Ref tới container DOM
-const scrollTop = ref(0); // Vị trí cuộn hiện tại
-const viewportHeight = ref(0); // Chiều cao của viewport
+/** Ref tới container DOM */
+const container = ref<HTMLElement | null>(null);
 
-// Số mục render thêm bên trên và bên dưới viewport (overscanning)
-const overscanCount = 5;
+/** Vị trí cuộn hiện tại */
+const scroll_top = ref(0);
 
-// Computed properties
-const totalHeight = computed(() => props.items.length * props.itemHeight);
+/** Chiều cao của viewport */ 
+const viewport_height = ref(0);
 
-const startIndex = computed(() => {
-  const index = Math.floor(scrollTop.value / props.itemHeight);
-  return Math.max(0, index - overscanCount);
+/** tổng chiều cao của danh sách */
+const total_height = computed(() => props.items.length * props.item_height);
+
+/** index của phần bắt đầu */
+const start_index = computed(() => {
+  const index = Math.floor(scroll_top.value / props.item_height);
+  return Math.max(0, index - props.overscan_count);
 });
 
-const endIndex = computed(() => {
-  const index = Math.ceil((scrollTop.value + viewportHeight.value) / props.itemHeight);
-  return Math.min(props.items.length, index + overscanCount);
+/** index của phần cuối */
+const end_index = computed(() => {
+  const index = Math.ceil(
+    (scroll_top.value + viewport_height.value) / props.item_height
+  );
+  return Math.min(props.items.length, index + props.overscan_count);
 });
 
-const startOffset = computed(() => startIndex.value * props.itemHeight);
+/** Chiều cao bắt đầu */
+const start_offset = computed(() => start_index.value * props.item_height);
 
-const visibleItems = computed(() => {
-  return props.items.slice(startIndex.value, endIndex.value);
+/** Danh sách các item hiển thị */
+const visible_items = computed(() => {
+  return props.items.slice(start_index.value, end_index.value);
 });
 
-// Xử lý sự kiện cuộn
+/** Xử lý sự kiện cuộn */ 
 const handleScroll = () => {
   if (container.value) {
-    scrollTop.value = container.value.scrollTop;
+    scroll_top.value = container.value.scrollTop;
   }
 };
 
 // Khởi tạo chiều cao viewport khi component được mount
 onMounted(() => {
   if (container.value) {
-    viewportHeight.value = container.value.clientHeight;
+    viewport_height.value = container.value.clientHeight;
   }
 });
 </script>
-
-<style scoped>
-.virtual-list-container {
-  height: 400px; /* Chiều cao cố định của container, có thể điều chỉnh */
-  overflow-y: auto;
-  position: relative;
-}
-
-.virtual-list-phantom {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.virtual-list {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.virtual-list-item {
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  box-sizing: border-box;
-}
-</style>

@@ -36,14 +36,34 @@
     >
     </CustomSelectV2>
   </div> -->
-  <VirtualList :items="listItems" :item-height="30" />
+  <!-- <div class="h-dvh">
+    <VirtualList :items="listItems" :item_height="30" :overscan_count="5">
+      <template #item="{ item }">
+        {{ (item as (typeof listItems)[0]).content }}
+      </template>
+    </VirtualList>
+  </div> -->
+  <DynamicVirtualList :items="listItems" :estimated-height="50">
+    <template #default="{ item }">
+      <div class="border" :style="`height: ${item.height}px`">{{ item.content }}</div>
+    </template>
+  </DynamicVirtualList>
 </template>
 
 <script setup lang="ts">
-import VirtualList from './components/VirtualList.vue';
+import DynamicVirtualList from "./components/DynamicVirtualList.vue";
+import VirtualList from "./components/VirtualList.vue";
+interface ListItem {
+  id: number;
+  content: string;
+  height: number;
+}
 
-
-const listItems = Array.from({ length: 1000 }, (_, i) => `Item ${i + 1}`);
+const listItems: ListItem[] = Array.from({ length: 10000 }, (_, i) => ({
+  id: i,
+  content: `Item ${i + 1}`,
+  height: Math.random() * 100,
+}));
 </script>
 
 <!-- <script setup lang="ts">

@@ -57,7 +57,7 @@
             @click="selectOption(option)"
             @mouseover="highlighted_index = index"
           >
-            <slot :name="index">
+            <slot name="item" :item="option">
               <div class="flex justify-between items-center p-2">
                 {{ customLabel(option) }}
                 <CheckIcon
@@ -80,11 +80,9 @@ import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
 import CheckIcon from "./icons/CheckIcon.vue";
 import XMarkIcon from "./icons/XMarkIcon.vue";
 
-type Option = any;
-
 const props = defineProps({
   options: {
-    type: Array as () => Option[],
+    type: Array as () => unknown[],
     required: true,
   },
   placeholder: {
@@ -164,7 +162,7 @@ const input_ref = ref<HTMLElement | null>(null);
 const dropdown_style = ref({})
 
 /** danh sách option được lọc */
-const filtered_options = computed<Option[]>(() => {
+const filtered_options = computed<unknown[]>(() => {
   if (props.onSearch) return props.options;
   
   return props.options.filter((opt) =>
@@ -200,7 +198,7 @@ onUnmounted(() => {
 });
 
 /** chọn option */
-function selectOption(option: Option): void {
+function selectOption(option: unknown): void {
   // lưu giá trị của option đã chọn
   value.value = props.customValue(option);
 
