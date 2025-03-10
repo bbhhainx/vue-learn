@@ -5,7 +5,8 @@
   <!-- <button v-for="item in TEST" @click="loadTemplate(item)">{{ item }}</button>
 
   <div v-html="template_html"></div> -->
-  <!-- <CustomSelectV2
+  <!-- <div class="h-[4000px] flex items-center">
+  <CustomSelectV2
     :options="list"
     :clearable="true"
     :custom-label="(option:any) => option?.address_name"
@@ -25,8 +26,11 @@
     <template v-for="option, index in list" #[index]>
       <span>{{ option?.address_name + ' custome' }}</span>
     </template>
-  </CustomSelectV2> -->
-  <!-- <div class="ml-2">
+  </CustomSelectV2>
+</div> -->
+  <div class="h-dvh w-dvw overflow-hidden">
+    <div class="h-full w-full overflow-auto">
+    <div class="ml-2 h-[4000px] w-[10000px] flex items-center justify-center">
     <CustomSelectV2
       :options="LIST"
       :custom-label="(option:any) => option?.label"
@@ -35,7 +39,9 @@
       :teleport="'body'"
     >
     </CustomSelectV2>
-  </div> -->
+  </div>
+  </div>
+  </div>
   <!-- <div class="h-dvh">
     <VirtualList :items="listItems" :item_height="30" :overscan_count="5">
       <template #item="{ item }">
@@ -43,16 +49,34 @@
       </template>
     </VirtualList>
   </div> -->
-  <DynamicVirtualList :items="listItems" :estimated-height="50">
+  <!-- <DynamicVirtualList :items="listItems" :estimated-height="50">
     <template #default="{ item }">
       <div class="border" :style="`height: ${item.height}px`">{{ item.content }}</div>
     </template>
-  </DynamicVirtualList>
+  </DynamicVirtualList> -->
+  <!-- <div style="height: 100dvh;overflow: hidden; display: flex; flex-direction: column;"> -->
+      <!-- <DynamicScroller :items="listItems" :min-item-size="54">
+      <template #default="{ item, index, active }">
+        <DynamicScrollerItem
+          :item="item"
+          :active="active"
+          :data-index="index"
+          :data-active="active"
+        >
+          <div class="border" :style="`height: ${item.height}px;min-height: 50px`">
+            {{ item.content }}
+          </div>
+        </DynamicScrollerItem>
+      </template>
+    </DynamicScroller> -->
+    <!-- <VirtualScroll /> -->
+  <!-- </div> -->
 </template>
 
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import DynamicVirtualList from "./components/DynamicVirtualList.vue";
-import VirtualList from "./components/VirtualList.vue";
+import VirtualScroll from "./components/VirtualScroll.vue";
+// import VirtualList from "./components/VirtualList.vue";
 interface ListItem {
   id: number;
   content: string;
@@ -64,9 +88,9 @@ const listItems: ListItem[] = Array.from({ length: 10000 }, (_, i) => ({
   content: `Item ${i + 1}`,
   height: Math.random() * 100,
 }));
-</script>
+</script> -->
 
-<!-- <script setup lang="ts">
+<script setup lang="ts">
 import { onMounted, ref } from "vue";
 import CustomSelectV2 from "./components/CustomSelectV2.vue";
 import { debounce } from "lodash";
@@ -129,7 +153,7 @@ function onSearch(search: string) {
   console.log("search", search);
   start_search();
 }
-</script> -->
+</script>
 <!-- <script setup lang="ts">
 import { onMounted, ref } from "vue";
 

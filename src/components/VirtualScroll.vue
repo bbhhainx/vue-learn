@@ -1,6 +1,6 @@
 <template>
   <div class="dynamic-scroller-demo">
-    <div class="toolbar">
+    <!-- <div class="toolbar">
       <input
         v-model="search"
         placeholder="Filter..."
@@ -9,30 +9,30 @@
         >({{ updateParts.viewStartIdx }} - [{{ updateParts.visibleStartIdx }} -
         {{ updateParts.visibleEndIdx }}] - {{ updateParts.viewEndIdx }})</span
       >
-    </div>
+    </div> -->
 
+    <!-- class="scroller" -->
     <DynamicScroller
-      :items="orders"
+      :items="listItems"
       :min-item-size="54"
-      :emit-update="true"
-      class="scroller"
-      @resize="onResize"
-      @update="onUpdate"
     >
-      <template #before>
+      <!-- :emit-update="true"
+      @resize="onResize"
+      @update="onUpdate" -->
+      <!-- <template #before>
         <div class="notice">The message heights are unknown.</div>
       </template>
       <template #after>
         <div class="notice">You have reached the end.</div>
-      </template>
+      </template> -->
       <template #default="{ item, index, active }">
         <DynamicScrollerItem
           :item="item"
           :active="active"
           :data-index="index"
           :data-active="active"
-          class="message"
-        >
+          >
+          <!-- class="message" -->
           <!-- <div class="avatar">
             <img
               :key="item.avatar"
@@ -48,9 +48,10 @@
             <span>{{ item.id }} (id)</span>
             <span>{{ index }} (index)</span>
           </div> -->
-          <OrderItem
+          <!-- <OrderItem
             :order="item"
-            />
+            /> -->
+            <div class="border" :style="`height: ${item.height}px`">{{ item.content }}</div>
         </DynamicScrollerItem>
       </template>
     </DynamicScroller>
@@ -73,12 +74,22 @@ const updateParts = ref({
   visibleStartIdx: 0,
   visibleEndIdx: 0,
 })
+interface ListItem {
+  id: number;
+  content: string;
+  height: number;
+}
 
+const listItems: ListItem[] = Array.from({ length: 10000 }, (_, i) => ({
+  id: i,
+  content: `Item ${i + 1}`,
+  height: Math.random() * 50,
+}));
 onMounted(() => {
 //   for (let i = 0; i < 100; i++) {
 //     items.value = [...items.value, { id: i, ...generateMessage() }]
 //   } 
-  getOrders()
+  // getOrders()
 })
 
 /** Lấy danh sách order */

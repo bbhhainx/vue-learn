@@ -8,11 +8,9 @@
       @keydown.up.prevent="highlightPrev"
       @keydown.enter.prevent="selectHighlighted"
       tabindex="0"
+      ref="dropdown_trigger_ref"
     >
-      <p 
-        v-show="!is_open || !searchable" 
-        class="w-full p-2"
-      >
+      <p v-show="!is_open || !searchable" class="w-full p-2">
         {{ selected_label || props.placeholder }}
       </p>
       <input
@@ -40,15 +38,15 @@
         <ChevronDownIcon v-else class="w-5 h-5 mr-2" />
       </div>
     </div>
-    
+
     <transition name="fade-slide">
       <Teleport :to="teleport || 'body'" :disabled="!teleport">
-      <div
-        v-if="is_open"
-        class="absolute w-full bg-white border rounded-lg mt-2 p-2 shadow-lg"
-        :style="dropdown_style"
-      >
-        <ul ref="dropdown_list_ref" class="max-h-40 overflow-y-auto">
+        <ul
+          v-if="is_open"
+          ref="dropdown_list_ref"
+          class="absolute w-full bg-white border rounded-lg shadow-lg p-2 max-h-40 overflow-y-auto"
+          :style="dropdown_style"
+        >
           <li
             v-for="(option, index) in filtered_options"
             :key="customValue(option)"
@@ -68,7 +66,6 @@
             </slot>
           </li>
         </ul>
-      </div>
       </Teleport>
     </transition>
   </div>
@@ -102,7 +99,7 @@ const props = defineProps({
     type: Function,
     required: false,
   },
-  teleport:{
+  teleport: {
     type: String,
     required: false,
     default: "",
@@ -155,16 +152,19 @@ const dropdown_ref = ref<HTMLElement | null>(null);
 /** ref đến list trong dropdown */
 const dropdown_list_ref = ref<HTMLElement | null>(null);
 
+/** ref đến trigger trong dropdown */
+const dropdown_trigger_ref = ref<HTMLElement | null>(null);
+
 /** ref đến input */
 const input_ref = ref<HTMLElement | null>(null);
 
 /** style của dropdown */
-const dropdown_style = ref({})
+const dropdown_style = ref({});
 
 /** danh sách option được lọc */
 const filtered_options = computed<unknown[]>(() => {
   if (props.onSearch) return props.options;
-  
+
   return props.options.filter((opt) =>
     props.customLabel(opt)?.toLowerCase().includes(search.value?.toLowerCase())
   );
@@ -183,18 +183,17 @@ const selected_label = computed<string>(() => {
 
 onMounted(() => {
   document.addEventListener("click", closeOnClickOutside);
-  if (props.teleport) {
-    window.addEventListener("scroll", updateDropdownPosition);
-    window.addEventListener("resize", updateDropdownPosition);
-  }
+  window.addEventListener("scroll", updateDropdownPosition, {
+    passive: true,
+    capture: true,
+  });
+  window.addEventListener("resize", updateDropdownPosition);
 });
 
 onUnmounted(() => {
   document.removeEventListener("click", closeOnClickOutside);
-  if (props.teleport) {
-    window.removeEventListener("scroll", updateDropdownPosition);
-    window.removeEventListener("resize", updateDropdownPosition);
-  }
+  window.removeEventListener("scroll", updateDropdownPosition);
+  window.removeEventListener("resize", updateDropdownPosition);
 });
 
 /** chọn option */
@@ -216,7 +215,7 @@ function clearSearch(): void {
   search.value = "";
   is_open.value = true;
   input_ref.value?.focus();
-  updateDropdownPosition()
+  updateDropdownPosition();
 }
 
 /** xóa option đã chọn */
@@ -299,15 +298,59 @@ function closeOnClickOutside(event: Event): void {
 
 /** hàm tính toán vị trí của dropdown */
 function updateDropdownPosition() {
-  if (props.teleport && dropdown_ref.value) {
-    const rect = dropdown_ref.value.getBoundingClientRect();
+  nextTick(() => {
+    if (!dropdown_trigger_ref.value || !dropdown_list_ref.value) return;
+
+    /** rect của trigger */
+    const RECT = dropdown_trigger_ref.value.getBoundingClientRect();
+
+    /** chiều cao của dropbox */
+    const DROPDOWN_HEIGHT = dropdown_list_ref.value.offsetHeight;
+
+    /** khoảng cách giữa option với trigger */
+    const SPACE = 8
+
+    /** vị trí top */
+    let top_position: number = 0;
+
+    /** vị trí left */
+    let left_position: number = 0;
+
+    /** khoảng cách với lề trên */
+    const SPACE_ABOVE = RECT.top;
+
+    /** khoảng cách với lề dưới */
+    const SPACE_BELOW = window.innerHeight - RECT.bottom;
+    
+    // nếu có teleport
+    if (props.teleport) {
+      if (SPACE_BELOW >= DROPDOWN_HEIGHT || SPACE_BELOW > SPACE_ABOVE) {
+        // Hiển thị phía dưới
+        top_position = RECT.bottom + window.scrollY + SPACE;
+      } else {
+        // Hiển thị phía trên
+        top_position = RECT.top + window.scrollY - DROPDOWN_HEIGHT - SPACE;
+      }
+
+      left_position = RECT.left + window.scrollX;
+    } else {
+      if (SPACE_BELOW >= DROPDOWN_HEIGHT || SPACE_BELOW > SPACE_ABOVE) {
+        // Hiển thị phía dưới
+        top_position = RECT.height + SPACE;
+      } else {
+        // Hiển thị phía trên
+        top_position = -DROPDOWN_HEIGHT - SPACE;
+      }
+    }
+
+    // Cập nhật style
     dropdown_style.value = {
+      top: `${top_position}px`,
+      left: `${left_position}px`,
+      width: `${RECT.width}px`,
       position: "absolute",
-      top: `${rect.bottom + window.scrollY}px`,
-      left: `${rect.left + window.scrollX}px`,
-      width: `${rect.width}px`,
     };
-  }
+  });
 }
 </script>
 

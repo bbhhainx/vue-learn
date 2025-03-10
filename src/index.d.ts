@@ -5,3 +5,4 @@ declare module "@tanstack/vue-table" {
 		header_class?: string;
   }
 }
+
