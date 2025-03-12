@@ -1,5 +1,5 @@
 <template>
-  <div ref="dropdown_ref" class="relative w-64">
+  <div ref="dropdown_ref" class="w-64">
     <div
       class="flex justify-between items-center border rounded-lg cursor-pointer outline-none"
       @click="clearSearch"
@@ -17,7 +17,7 @@
         v-if="searchable"
         ref="input_ref"
         :class="{
-          '!w-0': !is_open,
+          '!w-0 !p-0': !is_open,
         }"
         type="text"
         class="w-full border-none outline-none cursor-pointer p-2 rounded-lg"
@@ -39,12 +39,13 @@
       </div>
     </div>
 
+    <div style="position: relative; height: 0;">
     <transition name="fade-slide">
       <Teleport :to="teleport || 'body'" :disabled="!teleport">
         <ul
           v-if="is_open"
           ref="dropdown_list_ref"
-          class="absolute w-full bg-white border rounded-lg shadow-lg p-2 max-h-40 overflow-y-auto"
+          class="absolute w-full bg-white border rounded-lg shadow-lg p-2 h-40 overflow-y-auto"
           :style="dropdown_style"
         >
           <li
@@ -68,14 +69,16 @@
         </ul>
       </Teleport>
     </transition>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
 import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
 import CheckIcon from "./icons/CheckIcon.vue";
 import XMarkIcon from "./icons/XMarkIcon.vue";
+import { debounce } from "lodash";
 
 const props = defineProps({
   options: {
@@ -181,13 +184,11 @@ const selected_label = computed<string>(() => {
   );
 });
 
+// const debounce1 = debounce(updateDropdownPosition,100)
+
+
 onMounted(() => {
   document.addEventListener("click", closeOnClickOutside);
-  window.addEventListener("scroll", updateDropdownPosition, {
-    passive: true,
-    capture: true,
-  });
-  window.addEventListener("resize", updateDropdownPosition);
 });
 
 onUnmounted(() => {
@@ -195,6 +196,22 @@ onUnmounted(() => {
   window.removeEventListener("scroll", updateDropdownPosition);
   window.removeEventListener("resize", updateDropdownPosition);
 });
+
+watch(
+  () => is_open.value,
+  (new_value) => {
+    if (new_value) {
+      window.addEventListener("scroll", updateDropdownPosition, {
+        passive: true,
+        capture: true,
+      });
+      window.addEventListener("resize", updateDropdownPosition);
+    } else {
+      window.removeEventListener("scroll", updateDropdownPosition);
+      window.removeEventListener("resize", updateDropdownPosition);
+    }
+  }
+);
 
 /** chọn option */
 function selectOption(option: unknown): void {
@@ -214,8 +231,12 @@ function selectOption(option: unknown): void {
 function clearSearch(): void {
   search.value = "";
   is_open.value = true;
-  input_ref.value?.focus();
-  updateDropdownPosition();
+  input_ref.value?.focus({ preventScroll: true });
+
+  // DOM reder xog mới
+  requestAnimationFrame(() => {
+    updateDropdownPosition();
+  });
 }
 
 /** xóa option đã chọn */
@@ -297,7 +318,7 @@ function closeOnClickOutside(event: Event): void {
 }
 
 /** hàm tính toán vị trí của dropdown */
-function updateDropdownPosition() {
+async function updateDropdownPosition() {
   nextTick(() => {
     if (!dropdown_trigger_ref.value || !dropdown_list_ref.value) return;
 
@@ -308,10 +329,13 @@ function updateDropdownPosition() {
     const DROPDOWN_HEIGHT = dropdown_list_ref.value.offsetHeight;
 
     /** khoảng cách giữa option với trigger */
-    const SPACE = 8
+    const SPACE = 8;
 
     /** vị trí top */
     let top_position: number = 0;
+
+    /** vị trí bottom */
+    let bottom_position:number = 0
 
     /** vị trí left */
     let left_position: number = 0;
@@ -321,31 +345,36 @@ function updateDropdownPosition() {
 
     /** khoảng cách với lề dưới */
     const SPACE_BELOW = window.innerHeight - RECT.bottom;
-    
+
     // nếu có teleport
     if (props.teleport) {
       if (SPACE_BELOW >= DROPDOWN_HEIGHT || SPACE_BELOW > SPACE_ABOVE) {
         // Hiển thị phía dưới
         top_position = RECT.bottom + window.scrollY + SPACE;
+        bottom_position = 0
       } else {
         // Hiển thị phía trên
-        top_position = RECT.top + window.scrollY - DROPDOWN_HEIGHT - SPACE;
+        bottom_position = window.innerHeight - RECT.top - window.scrollY +  SPACE;
+        top_position = 0
       }
 
       left_position = RECT.left + window.scrollX;
     } else {
       if (SPACE_BELOW >= DROPDOWN_HEIGHT || SPACE_BELOW > SPACE_ABOVE) {
         // Hiển thị phía dưới
-        top_position = RECT.height + SPACE;
-      } else {
+        top_position = SPACE;
+        bottom_position = 0
+      } else {        
         // Hiển thị phía trên
-        top_position = -DROPDOWN_HEIGHT - SPACE;
+        bottom_position = RECT.height + SPACE;
+        top_position = 0
       }
     }
 
     // Cập nhật style
     dropdown_style.value = {
-      top: `${top_position}px`,
+      top: top_position ? `${top_position}px` : "auto",
+      bottom: bottom_position ? `${bottom_position}px` : "auto",
       left: `${left_position}px`,
       width: `${RECT.width}px`,
       position: "absolute",
