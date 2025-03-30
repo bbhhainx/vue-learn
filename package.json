@@ -27,6 +27,7 @@
     "radix-vue": "^1.9.2",
     "tinymce": "^7.6.0",
     "vue": "^3.4.31",
+    "vue-cleave-component": "^3.0.2",
     "vue-virtual-scroll-list": "^2.3.5",
     "vue-virtual-scroller": "2.0.0-beta.8"
   },
