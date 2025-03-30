@@ -58,10 +58,16 @@
     <Tiny v-model="content"/>
     {{ content }}
   </div>
+
+
+  <button v-for="item in TEST" @click="loadTemplate(item)">{{ item }}</button>
+  <div v-html="template_html"></div>
+  
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+
 import Select from "./components/Select.vue";
 import TinyEditorComponent from "../components/TinyEditorComponent.vue";
 import Tiny from "../components/Tiny.vue";
@@ -185,5 +191,42 @@ function print1() {
               <div style="border:1px dashed #000">${content.value}</div>
             </div>`;
   print({ printable: abc, type: "raw-html" });
+}
+
+
+
+
+
+/** các template mẫu sẵn */
+const DATAS = import.meta.glob('/src/data/*.html', {
+  as: 'raw',
+})
+
+const TEST = ["test1", "test2"];
+
+const template_html = ref("");
+
+onMounted(() => {
+  loadTemplate(TEST[0]);
+});
+
+/** load template động */
+async function loadTemplate(name: string) {
+  /** đường dẫn tới template */
+  const PATH = `/src/data/${name}.html`;
+
+  // nếu có thì lưu lại để hiển thị ra
+  if (DATAS[PATH]) {
+    template_html.value = await DATAS[PATH]();
+    console.log("template_html", template_html.value);
+
+    template_html.value = template_html.value?.replace('#{FULL_ORDER_ID}', '123');
+    
+  }
+  // không có thì báo không thấy
+  else {
+    template_html.value = "<p>Không tìm thấy template</p>";
+    console.error("Không tìm thấy template:", PATH);
+  }
 }
 </script>
