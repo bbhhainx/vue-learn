@@ -4,15 +4,14 @@
   <!-- <Input /> -->
   <!-- <Builder /> -->
   <!-- <ExampleBuilder /> -->
-   <TiptapEditor />
+  <ExampleBuilder2 />
+  <!-- <TiptapEditor /> -->
 </template>
 
-
-
 <script setup lang="ts">
-import Builder from './views/Builder.vue';
-import ExampleBuilder from './views/ExampleBuilder.vue';
-import Input from './views/Input.vue';
-import TiptapEditor from './views/TiptapEditor.vue';
-
+import Builder from "./views/Builder.vue";
+import ExampleBuilder from "./views/ExampleBuilder.vue";
+import ExampleBuilder2 from "./views/ExampleBuilder2.vue";
+import Input from "./views/Input.vue";
+import TiptapEditor from "./views/TiptapEditor.vue";
 </script>
