@@ -4,8 +4,9 @@
   <!-- <Input /> -->
   <!-- <Builder /> -->
   <!-- <ExampleBuilder /> -->
-  <ExampleBuilder2 />
+  <!-- <ExampleBuilder2 /> -->
   <!-- <TiptapEditor /> -->
+  <TiptapEditorLib />
 </template>
 
 <script setup lang="ts">
@@ -14,4 +15,5 @@ import ExampleBuilder from "./views/ExampleBuilder.vue";
 import ExampleBuilder2 from "./views/ExampleBuilder2.vue";
 import Input from "./views/Input.vue";
 import TiptapEditor from "./views/TiptapEditor.vue";
+import TiptapEditorLib from "./views/TiptapEditorLib.vue";
 </script>
