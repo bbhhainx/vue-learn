@@ -31,7 +31,6 @@ onMounted(() => {
   editor.value = new Editor({
     extensions: [
       Color.configure({ types: [TextStyle.name, ListItem.name] }),
-      TextStyle.configure({ types: [ListItem.name] }),
       StarterKit.configure({ codeBlock: false }),
       Underline,
       TaskList,
@@ -64,11 +63,11 @@ ul[data-type="taskList"] > li {
   align-items: center;
   gap: 3px;
 }
-ul[data-type="taskList"] >li::before{
+ul[data-type="taskList"] > li::before {
   display: none !important;
 }
 
-ul[data-type="taskList"] >li >label{
+ul[data-type="taskList"] > li > label {
   position: absolute;
   margin-left: -17px;
   display: flex;
@@ -79,27 +78,27 @@ input[type="checkbox"] {
   height: 18px;
 }
 
-ul >li::before{
+ul > li::before {
   position: absolute;
   content: "";
-    margin-top: 6px;
-    margin-left: -17px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background-color: #ccc;
+  margin-top: 6px;
+  margin-left: -17px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #ccc;
 }
-ol >li::before{
+ol > li::before {
   position: absolute;
   content: "." counter(li);
-    margin-left: -28px;
-    width: 24px;
-    text-align: right;
-    direction: rtl;
-    color: #aaa;
+  margin-left: -28px;
+  width: 24px;
+  text-align: right;
+  direction: rtl;
+  color: #aaa;
 }
-ul >li,
-ol >li {
+ul > li,
+ol > li {
   position: relative;
   counter-increment: li;
 }
@@ -109,9 +108,43 @@ ol {
   margin: 0 1rem 0 0;
   counter-reset: li;
 }
-hr{
+hr {
   margin: 1rem 0;
   display: block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.1;
+  text-wrap: pretty;
+}
+
+h1 {
+  font-size: 1.8rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.4rem;
+}
+
+h4 {
+  font-size: 1.3rem;
+}
+
+h5 {
+  font-size: 1.2rem;
+}
+
+h6 {
+  font-size: 1.1rem;
 }
 </style>
 

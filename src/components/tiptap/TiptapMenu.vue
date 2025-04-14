@@ -1,35 +1,48 @@
 <template>
   <div class="menu-bar">
-    <button @click="toggleHeading" :class="{ active: isHeadingActive }">
-      H
-    </button>
+    <select
+      @input="(e:Event) => {
+      const TARGET = e?.target as HTMLSelectElement
+      const VALUE = Number(TARGET?.value) as 1 | 2 | 3 | 4 | 5 | 6
+      changeHeading(VALUE)
+    }"
+    >
+      <option value="1">Heading 1</option>
+      <option value="2">Heading 2</option>
+      <option value="3">Heading 3</option>
+      <option value="4">Heading 4</option>
+      <option value="5">Heading 5</option>
+      <option value="6">Heading 6</option>
+    </select>
     <button
       @click="command('toggleBold')"
       :class="{ active: editor?.isActive('bold') }"
     >
-      <strong>B</strong>
+      <BoldIcon class="w-5 h-5" />
     </button>
     <button
       @click="command('toggleItalic')"
       :class="{ active: editor?.isActive('italic') }"
     >
-      <i>I</i>
+      <ItalicIcon class="w-5 h-5" />
     </button>
     <button
       @click="command('toggleStrike')"
       :class="{ active: editor?.isActive('strike') }"
     >
-      <s>S</s>
+      <StrikeThroughIcon class="w-5 h-5" />
     </button>
 
     <span class="divider" />
 
-    <button @click="command('setHorizontalRule')">—</button>
+    <button @click="command('setHorizontalRule')">
+      <div class="w-5 h-5">—</div>
+    </button>
     <button
       @click="command('toggleBlockquote')"
       :class="{ active: editor?.isActive('blockquote') }"
     >
-      “”
+      <BlockQuoteIcon class="w-5 h-5" />
     </button>
 
     <span class="divider" />
@@ -38,19 +51,21 @@
       @click="command('toggleBulletList')"
       :class="{ active: editor?.isActive('bulletList') }"
     >
-      • List
+      <ListBulletIcon class="w-5 h-5" />
     </button>
     <button
       @click="command('toggleOrderedList')"
       :class="{ active: editor?.isActive('orderedList') }"
     >
-      1. List
+      <NumberListIcon class="w-5 h-5" />
     </button>
     <button
       @click="command('toggleTaskList')"
       :class="{ active: editor?.isActive('taskList') }"
     >
-      ☑
+      <div class="w-5 h-5 flex items-center justify-center">
+        ☑
+      </div>
     </button>
 
     <button
@@ -89,6 +104,13 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import type { Editor } from "@tiptap/vue-3";
+import BoldIcon from "./icons/BoldIcon.vue";
+import ItalicIcon from "./icons/ItalicIcon.vue";
+import { Strike } from "element-tiptap";
+import StrikeThroughIcon from "./icons/StrikeThroughIcon.vue";
+import BlockQuoteIcon from "./icons/BlockQuoteIcon.vue";
+import ListBulletIcon from "./icons/ListBulletIcon.vue";
+import NumberListIcon from "./icons/NumberListIcon.vue";
 
 const props = defineProps<{
   editor: Editor;
@@ -123,15 +145,19 @@ const command = (cmd: string) => {
     case "setHorizontalRule":
       props.editor.chain().focus().setHorizontalRule().run();
       break;
-
+    case "indent":
+      props.editor.commands.sinkListItem("listItem");
+      break;
+    case "outdent":
+      props.editor.commands.liftListItem("listItem");
+      break;
     default:
       break;
   }
 };
 
-const toggleHeading = () => {
-  const isActive = props.editor.isActive("heading", { level: 2 });
-  props.editor.chain().focus().toggleHeading({ level: 2 }).run();
+const changeHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {
+  props.editor.chain().focus().toggleHeading({ level: level }).run();
 };
 
 const isHeadingActive = computed(() =>
@@ -185,14 +211,15 @@ const setLink = () => {
 button {
   background: transparent;
   border: 1px solid #ccc;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 6px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 button.active {
   background-color: #e0f0ff;
   border-color: #007bff;
+  color: #007bff;
 }
 
 .divider {
