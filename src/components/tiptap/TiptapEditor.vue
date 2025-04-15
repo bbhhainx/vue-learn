@@ -52,99 +52,174 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 </script>
-<style>
+<style lang="scss">
 .tiptap {
   padding: 10px 20px;
   outline: none;
   border: 1px solid #ccc;
-}
-ul[data-type="taskList"] > li {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-ul[data-type="taskList"] > li::before {
-  display: none !important;
-}
+  ul[data-type="taskList"] > li {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  ul[data-type="taskList"] > li::before {
+    display: none !important;
+  }
+  ul[data-type="taskList"] > li > label {
+    position: absolute;
+    margin-left: -23px;
+    display: flex;
+  }
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+  }
+  ul > li::before {
+    position: absolute;
+    content: "";
+    margin-top: 6px;
+    margin-left: -17px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #ccc;
+  }
+  ol > li::before {
+    position: absolute;
+    content: "." counter(li);
+    margin-left: -28px;
+    width: 24px;
+    text-align: right;
+    direction: rtl;
+    color: #aaa;
+  }
+  ul > li,
+  ol > li {
+    position: relative;
+    counter-increment: li;
+  }
+  ul,
+  ol {
+    padding: 0 1.5rem;
+    margin: 0 1rem 0 0;
+    counter-reset: li;
+  }
+  hr {
+    margin: 1rem 0;
+    display: block;
+  }
 
-ul[data-type="taskList"] > li > label {
-  position: absolute;
-  margin-left: -17px;
-  display: flex;
-}
+  blockquote {
+    border-left: 3px solid gray;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+  }
 
-input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-}
+  pre {
+    background: black;
+    border-radius: 0.5rem;
+    color: white;
+    font-family: 'JetBrainsMono', monospace;
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
 
-ul > li::before {
-  position: absolute;
-  content: "";
-  margin-top: 6px;
-  margin-left: -17px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: #ccc;
-}
-ol > li::before {
-  position: absolute;
-  content: "." counter(li);
-  margin-left: -28px;
-  width: 24px;
-  text-align: right;
-  direction: rtl;
-  color: #aaa;
-}
-ul > li,
-ol > li {
-  position: relative;
-  counter-increment: li;
-}
-ul,
-ol {
-  padding: 0 1.5rem;
-  margin: 0 1rem 0 0;
-  counter-reset: li;
-}
-hr {
-  margin: 1rem 0;
-  display: block;
-}
+    code {
+      background: none;
+      color: inherit;
+      font-size: 0.8rem;
+      padding: 0;
+    }
+  }
+  a {
+    color: blue;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  line-height: 1.1;
-  text-wrap: pretty;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    line-height: 1.1;
+    text-wrap: pretty;
+  }
+  h1 {
+    font-size: 1.8rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  h3 {
+    font-size: 1.4rem;
+  }
+  h4 {
+    font-size: 1.3rem;
+  }
+  h5 {
+    font-size: 1.2rem;
+  }
+  h6 {
+    font-size: 1.1rem;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 0;
+    overflow: hidden;
+    table-layout: fixed;
+    width: 100%;
+  }
+  table td,
+  table th {
+    border: 1px solid black;
+    box-sizing: border-box;
+    min-width: 1em;
+    padding: 6px 8px;
+    position: relative;
+    vertical-align: top;
+  }
 
-h1 {
-  font-size: 1.8rem;
-}
+  table th {
+    background-color: rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    text-align: left;
+  }
 
-h2 {
-  font-size: 1.5rem;
-}
+  table .selectedCell:after {
+    background: rgba(0, 0, 0, 0.1);
+    content: "";
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+    position: absolute;
+    z-index: 2;
+  }
 
-h3 {
-  font-size: 1.4rem;
-}
+  table .column-resize-handle {
+    background-color: gray;
+    bottom: -2px;
+    pointer-events: none;
+    position: absolute;
+    right: -2px;
+    top: 0;
+    width: 4px;
+  }
 
-h4 {
-  font-size: 1.3rem;
-}
+  .tableWrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
 
-h5 {
-  font-size: 1.2rem;
-}
-
-h6 {
-  font-size: 1.1rem;
+  &.resize-cursor {
+    cursor: ew-resize;
+    cursor: col-resize;
+  }
 }
 </style>
 

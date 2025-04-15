@@ -1,19 +1,57 @@
 <template>
   <div class="menu-bar">
-    <select
-      @input="(e:Event) => {
-      const TARGET = e?.target as HTMLSelectElement
-      const VALUE = Number(TARGET?.value) as 1 | 2 | 3 | 4 | 5 | 6
-      changeHeading(VALUE)
-    }"
-    >
-      <option value="1">Heading 1</option>
-      <option value="2">Heading 2</option>
-      <option value="3">Heading 3</option>
-      <option value="4">Heading 4</option>
-      <option value="5">Heading 5</option>
-      <option value="6">Heading 6</option>
-    </select>
+    <DropBox
+      v-model="open_heading"
+      :close="() => open_heading = false"
+      >
+    <template #trigger>
+      <button
+        @click="open_heading = !open_heading"
+        class="flex items-center justify-between cursor-pointer text-sm gap-2 w-36"
+        :class="{ 'text-[#007bff] !border-[#007bff] !bg-[#e0f0ff]': editor?.isActive('heading') }"
+      >
+        <template v-for="heading in HEADING">
+          <span class="text-[#007bff]" v-if="editor?.isActive('heading', { level: heading.level })">
+            {{ heading.label }}
+          </span>
+        </template>
+        <span v-if="!editor?.isActive('heading')">Paragraph</span>
+        <ChevronDownIcon class="w-4 h-4" />
+      </button>
+    </template>
+    <template #content>
+      <div
+        v-if="open_heading"
+        class="w-36 bg-white border border-gray-300 rounded shadow-lg p-2 z-10"
+      >
+        <div
+          class="hover:bg-slate-100 rounded-md py-1 px-2 cursor-pointer"
+          @click="() => {
+            editor?.chain().focus().setParagraph().run()
+            open_heading = false
+          }"
+          :class="{
+            '!bg-blue-200': !editor?.isActive('heading')
+          }"
+        >
+          Paragraph
+        </div>
+        <template v-for="heading in HEADING">
+          <div
+            class="hover:bg-slate-100 rounded-md py-1 px-2 cursor-pointer"
+            @click="changeHeading(heading.level)"
+            :class="{
+              '!bg-blue-200': editor?.isActive('heading', {
+                level: heading.level,
+              }),
+            }"
+          >
+            {{ heading.label }}
+          </div>
+        </template>
+      </div>
+      </template>
+    </DropBox>
     <button
       @click="command('toggleBold')"
       :class="{ active: editor?.isActive('bold') }"
@@ -63,58 +101,87 @@
       @click="command('toggleTaskList')"
       :class="{ active: editor?.isActive('taskList') }"
     >
-      <div class="w-5 h-5 flex items-center justify-center">
-        ☑
-      </div>
+      <div class="w-5 h-5 flex items-center justify-center">☑</div>
     </button>
 
     <button
       @click="alignText('left')"
       :class="{ active: editor?.isActive({ textAlign: 'left' }) }"
     >
-      ⇤
+      <TextAlignLeftIcon class="w-5 h-5" />
     </button>
     <button
       @click="alignText('center')"
       :class="{ active: editor?.isActive({ textAlign: 'center' }) }"
     >
-      ⇥⇤
+      <TextAlignCenterIcon class="w-5 h-5" />
     </button>
     <button
       @click="alignText('right')"
       :class="{ active: editor?.isActive({ textAlign: 'right' }) }"
     >
-      ⇥
+      <TextAlignRightIcon class="w-5 h-5" />
     </button>
 
     <span class="divider" />
 
-    <button @click="insertTable">📊</button>
-    <button @click="insertImage">🖼</button>
-    <button @click="setLink">🔗</button>
+    <button @click="insertTable">
+      <TableIcon class="w-5 h-5" />
+    </button>
+    <button @click="insertImage">
+      <ImageIcon class="w-5 h-5" />
+    </button>
+    <button @click="setLink">
+      <LinkIcon class="w-5 h-5" />
+    </button>
     <button
       @click="command('toggleCodeBlock')"
       :class="{ active: editor?.isActive('codeBlock') }"
     >
-      { }
+      <CodeIcon class="w-5 h-5" />
     </button>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Editor } from "@tiptap/vue-3";
 import BoldIcon from "./icons/BoldIcon.vue";
 import ItalicIcon from "./icons/ItalicIcon.vue";
-import { Strike } from "element-tiptap";
 import StrikeThroughIcon from "./icons/StrikeThroughIcon.vue";
 import BlockQuoteIcon from "./icons/BlockQuoteIcon.vue";
 import ListBulletIcon from "./icons/ListBulletIcon.vue";
 import NumberListIcon from "./icons/NumberListIcon.vue";
+import TextAlignLeftIcon from "./icons/TextAlignLeftIcon.vue";
+import TextAlignCenterIcon from "./icons/TextAlignCenterIcon.vue";
+import TextAlignRightIcon from "./icons/TextAlignRightIcon.vue";
+import ImageIcon from "./icons/ImageIcon.vue";
+import TableIcon from "./icons/TableIcon.vue";
+import LinkIcon from "./icons/LinkIcon.vue";
+import CodeIcon from "./icons/CodeIcon.vue";
+import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
+import { Paragraph } from "element-tiptap";
+import DropBox from "../DropBox.vue";
+
+type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 const props = defineProps<{
   editor: Editor;
 }>();
+
+const open_heading = ref(false);
+
+const HEADING: {
+  level: HeadingLevel;
+  label: string;
+}[] = [
+  { level: 1, label: "Heading 1" },
+  { level: 2, label: "Heading 2" },
+  { level: 3, label: "Heading 3" },
+  { level: 4, label: "Heading 4" },
+  { level: 5, label: "Heading 5" },
+  { level: 6, label: "Heading 6" },
+];
 
 const command = (cmd: string) => {
   switch (cmd) {
@@ -156,8 +223,9 @@ const command = (cmd: string) => {
   }
 };
 
-const changeHeading = (level: 1 | 2 | 3 | 4 | 5 | 6) => {
+const changeHeading = (level: HeadingLevel) => {
   props.editor.chain().focus().toggleHeading({ level: level }).run();
+  open_heading.value = false;
 };
 
 const isHeadingActive = computed(() =>
@@ -196,7 +264,7 @@ const setLink = () => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .menu-bar {
   display: flex;
   flex-wrap: wrap;
@@ -206,26 +274,26 @@ const setLink = () => {
   background: #f9fafb;
   border: 1px solid #ddd;
   border-radius: 6px;
-}
 
-button {
-  background: transparent;
-  border: 1px solid #ccc;
-  padding: 6px;
-  border-radius: 6px;
-  cursor: pointer;
-}
+  button {
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 6px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
 
-button.active {
-  background-color: #e0f0ff;
-  border-color: #007bff;
-  color: #007bff;
-}
+  button.active {
+    background-color: #e0f0ff;
+    border-color: #007bff;
+    color: #007bff;
+  }
 
-.divider {
-  width: 1px;
-  height: 20px;
-  background-color: #ddd;
-  margin: 0 6px;
+  .divider {
+    width: 1px;
+    height: 20px;
+    background-color: #ddd;
+    margin: 0 6px;
+  }
 }
 </style>
