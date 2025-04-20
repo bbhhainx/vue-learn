@@ -24,6 +24,8 @@ import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import TiptapMenu from "./TiptapMenu.vue";
+import { ImagePlaceholder } from "./extensions/ImagePlaceholder";
+import { Node as ProsemirrorNode } from "prosemirror-model";
 
 const editor = ref<Editor>();
 
@@ -43,10 +45,98 @@ onMounted(() => {
       TableRow,
       TableHeader,
       TableCell,
+      ImagePlaceholder
     ],
     content: "<p>Hello Tiptap!</p>",
+    editorProps: {
+      handleDOMEvents: {
+        paste: (view, event) => {
+          const items = event.clipboardData?.items || [];
+
+          for (const item of items) {
+            if (item.type.startsWith("image")) {
+              const file = item.getAsFile();
+              if (!file) return false;
+
+              const id = `${Date.now()}-${Math.random()}`;
+              const node = view.state.schema.nodes.imagePlaceholder.create({
+                id,
+              });
+
+              const tr = view.state.tr.replaceSelectionWith(node);
+              view.dispatch(tr);
+
+              uploadImage(file)
+                .then((url) => {
+                  const pos = findNodePos(
+                    view.state.doc,
+                    id,
+                    "imagePlaceholder"
+                  );
+                  
+                  if (pos !== null) {
+                    const imageNode = view.state.schema.nodes.image.create({
+                      src: 'https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp',
+                    });
+                    // Tạo transaction để thay thế node tại vị trí đã cho
+                    const tr = view.state.tr.replaceRangeWith(pos, pos+ node.nodeSize, imageNode)
+
+                    view.dispatch(tr);
+                  }
+                })
+                .catch(() => {
+                  const pos = findNodePos(
+                    view.state.doc,
+                    id,
+                    "imagePlaceholder"
+                  );
+                  if (pos !== null) {
+                    const tr = view.state.tr.delete(pos, pos + 1);
+                    view.dispatch(tr);
+                  }
+                });
+
+              return true; // chặn paste mặc định
+            }
+          }
+
+          return false;
+        },
+      },
+    },
   });
 });
+
+// 👉 Hàm upload giả lập
+function uploadImage(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const succeed = Math.random() > 0.2; // 80% success
+      if (succeed)
+        resolve(URL.createObjectURL(file)); // demo thôi, thay bằng link thật
+      else reject(new Error("Upload failed"));
+    }, 1500);
+  });
+}
+
+// 👉 Tìm vị trí node ảnh theo custom attr
+function findNodePos(
+  doc: ProsemirrorNode,
+  id: string,
+  nodeTypeName: string
+): number | null {
+  let foundPos: number | null = null;
+
+  doc.descendants((node, pos) => {
+    if (node.type.name === nodeTypeName && node.attrs.id === id) {
+      foundPos = pos;
+      return false;
+    }
+    return true;
+  });
+
+  return foundPos;
+}
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
@@ -119,7 +209,7 @@ onBeforeUnmount(() => {
     background: black;
     border-radius: 0.5rem;
     color: white;
-    font-family: 'JetBrainsMono', monospace;
+    font-family: "JetBrainsMono", monospace;
     margin: 1rem 0;
     padding: 0.75rem 1rem;
 
@@ -219,6 +309,9 @@ onBeforeUnmount(() => {
   &.resize-cursor {
     cursor: ew-resize;
     cursor: col-resize;
+  }
+  img.ProseMirror-selectednode {
+    outline: 3px solid blue;
   }
 }
 </style>

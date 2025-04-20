@@ -1,5 +1,14 @@
 <template>
   <div class="menu-bar">
+    <button @click="command('undo')">
+      <UndoIcon class="w-5 h-5" />
+    </button>
+    <button @click="command('redo')">
+      <RedoIcon class="w-5 h-5" />
+    </button>
+
+    <span class="divider" />
+
     <DropBox
       v-model="open_heading"
       :close="() => open_heading = false"
@@ -144,33 +153,43 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+// * Libraries
+import { ref } from "vue";
 import type { Editor } from "@tiptap/vue-3";
+
+// * Components
+import DropBox from "../DropBox.vue";
+
+// * Icons
 import BoldIcon from "./icons/BoldIcon.vue";
+import LinkIcon from "./icons/LinkIcon.vue";
+import CodeIcon from "./icons/CodeIcon.vue";
+import UndoIcon from "./icons/UndoIcon.vue";
+import RedoIcon from "./icons/RedoIcon.vue";
+import ImageIcon from "./icons/ImageIcon.vue";
+import TableIcon from "./icons/TableIcon.vue";
 import ItalicIcon from "./icons/ItalicIcon.vue";
-import StrikeThroughIcon from "./icons/StrikeThroughIcon.vue";
 import BlockQuoteIcon from "./icons/BlockQuoteIcon.vue";
 import ListBulletIcon from "./icons/ListBulletIcon.vue";
 import NumberListIcon from "./icons/NumberListIcon.vue";
-import TextAlignLeftIcon from "./icons/TextAlignLeftIcon.vue";
-import TextAlignCenterIcon from "./icons/TextAlignCenterIcon.vue";
-import TextAlignRightIcon from "./icons/TextAlignRightIcon.vue";
-import ImageIcon from "./icons/ImageIcon.vue";
-import TableIcon from "./icons/TableIcon.vue";
-import LinkIcon from "./icons/LinkIcon.vue";
-import CodeIcon from "./icons/CodeIcon.vue";
 import ChevronDownIcon from "./icons/ChevronDownIcon.vue";
-import { Paragraph } from "element-tiptap";
-import DropBox from "../DropBox.vue";
+import StrikeThroughIcon from "./icons/StrikeThroughIcon.vue";
+import TextAlignLeftIcon from "./icons/TextAlignLeftIcon.vue";
+import TextAlignRightIcon from "./icons/TextAlignRightIcon.vue";
+import TextAlignCenterIcon from "./icons/TextAlignCenterIcon.vue";
 
+// * Interfaces
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
+/** props */
 const props = defineProps<{
   editor: Editor;
 }>();
 
+/** Đóng mở select chọn heading */
 const open_heading = ref(false);
 
+/** Danh sách các cấp heading */
 const HEADING: {
   level: HeadingLevel;
   label: string;
@@ -183,6 +202,7 @@ const HEADING: {
   { level: 6, label: "Heading 6" },
 ];
 
+/** Hàm xử lý các lệnh */
 const command = (cmd: string) => {
   switch (cmd) {
     case "toggleBold":
@@ -218,24 +238,29 @@ const command = (cmd: string) => {
     case "outdent":
       props.editor.commands.liftListItem("listItem");
       break;
+    case "undo":
+      props.editor.commands.undo();
+      break;
+    case "redo":
+      props.editor.commands.redo();
+      break;
     default:
       break;
   }
 };
 
+/** Hàm xử lý thay đổi heading */
 const changeHeading = (level: HeadingLevel) => {
   props.editor.chain().focus().toggleHeading({ level: level }).run();
   open_heading.value = false;
 };
 
-const isHeadingActive = computed(() =>
-  props.editor?.isActive("heading", { level: 2 })
-);
-
+/** Hàm xử lý căn chỉnh văn bản */
 const alignText = (alignment: "left" | "center" | "right") => {
   props.editor.chain().focus().setTextAlign(alignment).run();
 };
 
+/** Hàm xử lý chèn bảng */
 const insertTable = () => {
   props.editor
     .chain()
