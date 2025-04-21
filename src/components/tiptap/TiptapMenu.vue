@@ -1,64 +1,77 @@
 <template>
   <div class="menu-bar">
-    <button @click="command('undo')">
+    <button
+      @click="command('undo')"
+      class="disabled:opacity-30"
+      :disabled="!editor?.can().undo()"
+    >
       <UndoIcon class="w-5 h-5" />
     </button>
-    <button @click="command('redo')">
+    <button
+      @click="command('redo')"
+      class="disabled:opacity-30"
+      :disabled="!editor?.can().redo()"
+    >
       <RedoIcon class="w-5 h-5" />
     </button>
 
     <span class="divider" />
 
-    <DropBox
-      v-model="open_heading"
-      :close="() => open_heading = false"
-      >
-    <template #trigger>
-      <button
-        @click="open_heading = !open_heading"
-        class="flex items-center justify-between cursor-pointer text-sm gap-2 w-36"
-        :class="{ 'text-[#007bff] !border-[#007bff] !bg-[#e0f0ff]': editor?.isActive('heading') }"
-      >
-        <template v-for="heading in HEADING">
-          <span class="text-[#007bff]" v-if="editor?.isActive('heading', { level: heading.level })">
-            {{ heading.label }}
-          </span>
-        </template>
-        <span v-if="!editor?.isActive('heading')">Paragraph</span>
-        <ChevronDownIcon class="w-4 h-4" />
-      </button>
-    </template>
-    <template #content>
-      <div
-        v-if="open_heading"
-        class="w-36 bg-white border border-gray-300 rounded shadow-lg p-2 z-10"
-      >
-        <div
-          class="hover:bg-slate-100 rounded-md py-1 px-2 cursor-pointer"
-          @click="() => {
-            editor?.chain().focus().setParagraph().run()
-            open_heading = false
-          }"
+    <DropBox v-model="open_heading" :close="() => (open_heading = false)">
+      <template #trigger>
+        <button
+          @click="open_heading = !open_heading"
+          class="flex items-center justify-between cursor-pointer text-sm gap-2 w-36"
           :class="{
-            '!bg-blue-200': !editor?.isActive('heading')
+            'text-[#007bff] !border-[#007bff] !bg-[#e0f0ff]':
+              editor?.isActive('heading'),
           }"
         >
-          Paragraph
-        </div>
-        <template v-for="heading in HEADING">
+          <template v-for="heading in HEADING">
+            <span
+              class="text-[#007bff]"
+              v-if="editor?.isActive('heading', { level: heading.level })"
+            >
+              {{ heading.label }}
+            </span>
+          </template>
+          <span v-if="!editor?.isActive('heading')">Paragraph</span>
+          <ChevronDownIcon class="w-4 h-4" />
+        </button>
+      </template>
+      <template #content>
+        <div
+          v-if="open_heading"
+          class="w-36 bg-white border border-gray-300 rounded shadow-lg p-2 z-10"
+        >
           <div
             class="hover:bg-slate-100 rounded-md py-1 px-2 cursor-pointer"
-            @click="changeHeading(heading.level)"
+            @click="
+              () => {
+                editor?.chain().focus().setParagraph().run();
+                open_heading = false;
+              }
+            "
             :class="{
-              '!bg-blue-200': editor?.isActive('heading', {
-                level: heading.level,
-              }),
+              '!bg-blue-200': !editor?.isActive('heading'),
             }"
           >
-            {{ heading.label }}
+            Paragraph
           </div>
-        </template>
-      </div>
+          <template v-for="heading in HEADING">
+            <div
+              class="hover:bg-slate-100 rounded-md py-1 px-2 cursor-pointer"
+              @click="changeHeading(heading.level)"
+              :class="{
+                '!bg-blue-200': editor?.isActive('heading', {
+                  level: heading.level,
+                }),
+              }"
+            >
+              {{ heading.label }}
+            </div>
+          </template>
+        </div>
       </template>
     </DropBox>
     <button
@@ -72,6 +85,12 @@
       :class="{ active: editor?.isActive('italic') }"
     >
       <ItalicIcon class="w-5 h-5" />
+    </button>
+    <button
+      @click="command('toggleUnderline')"
+      :class="{ active: editor?.isActive('italic') }"
+    >
+      <UnderlineIcon class="w-5 h-5" />
     </button>
     <button
       @click="command('toggleStrike')"
@@ -140,8 +159,23 @@
     <button @click="insertImage">
       <ImageIcon class="w-5 h-5" />
     </button>
-    <button @click="setLink">
+    <!-- <button @click="setLink">
       <LinkIcon class="w-5 h-5" />
+    </button> -->
+    <button>
+      <label class="w-5 h-5 flex justify-center gap-1 cursor-pointer flex-col">
+        <PaintIcon
+          :style="`color: ${
+            editor.getAttributes('textStyle')?.color || '000000'
+          }`"
+          class="w-5 h-5"
+        />
+        <input
+          type="color"
+          class="hidden"
+          @input="(e:any) => e?.target?.value && editor.commands.setColor(e.target.value)"
+        />
+      </label>
     </button>
     <button
       @click="command('toggleCodeBlock')"
@@ -169,6 +203,7 @@ import RedoIcon from "./icons/RedoIcon.vue";
 import ImageIcon from "./icons/ImageIcon.vue";
 import TableIcon from "./icons/TableIcon.vue";
 import ItalicIcon from "./icons/ItalicIcon.vue";
+import UnderlineIcon from "./icons/UnderlineIcon.vue";
 import BlockQuoteIcon from "./icons/BlockQuoteIcon.vue";
 import ListBulletIcon from "./icons/ListBulletIcon.vue";
 import NumberListIcon from "./icons/NumberListIcon.vue";
@@ -177,6 +212,7 @@ import StrikeThroughIcon from "./icons/StrikeThroughIcon.vue";
 import TextAlignLeftIcon from "./icons/TextAlignLeftIcon.vue";
 import TextAlignRightIcon from "./icons/TextAlignRightIcon.vue";
 import TextAlignCenterIcon from "./icons/TextAlignCenterIcon.vue";
+import PaintIcon from "./icons/PaintIcon.vue";
 
 // * Interfaces
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -184,6 +220,7 @@ type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 /** props */
 const props = defineProps<{
   editor: Editor;
+  uploadImage: (file: File) => Promise<string>;
 }>();
 
 /** Đóng mở select chọn heading */
@@ -213,6 +250,9 @@ const command = (cmd: string) => {
       break;
     case "toggleStrike":
       props.editor.chain().focus().toggleStrike().run();
+      break;
+    case "toggleUnderline":
+      props.editor.chain().focus().toggleUnderline().run();
       break;
     case "toggleBlockquote":
       props.editor.chain().focus().toggleBlockquote().run();
@@ -269,13 +309,6 @@ const insertTable = () => {
     .run();
 };
 
-const insertImage = () => {
-  const url = prompt("Image URL");
-  if (url) {
-    props.editor.chain().focus().setImage({ src: url }).run();
-  }
-};
-
 const setLink = () => {
   const url = prompt("Enter link URL");
   if (url) {
@@ -287,6 +320,42 @@ const setLink = () => {
       .run();
   }
 };
+
+/** hàm xử lý tải ảnh từ máy lên */
+function insertImage() {
+  // Tạo input
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+
+  // Bắt sự kiện chọn file
+  input.onchange = () => {
+    // lấy file đầu tiên
+    const file = input.files?.[0];
+    // nếu không có thì thôi
+    if (!file) return;
+
+    // call api upload ảnh
+    props
+      ?.uploadImage(file)
+      .then((url) => {
+        props.editor.commands.insertContent({
+          type: "resizableImage",
+          attrs: {
+            src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
+            alt: file.name,
+            width: "300px",
+          },
+        });
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
+
+  // Kích hoạt input
+  input.click();
+}
 </script>
 
 <style lang="scss" scoped>
