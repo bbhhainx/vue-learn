@@ -1,12 +1,41 @@
 <template>
-  <div v-if="editor">
+  <div v-if="editor" class="relative flex flex-col">
     <TiptapMenu :editor="editor" :uploadImage="uploadImage" />
-    <EditorContent :editor="editor" />
+    <EditorContent v-if="display_type === 'wysiwyg'" :editor="editor" />
+    <textarea
+      v-else
+      ref="textarea"
+      @input="autoResize"
+      class="w-full outline-none border px-5 py-2.5 border-gray-300 p-2 h-max overflow-hidden resize-none"
+      v-model="content"
+      placeholder="Nhập nội dung ở đây..."
+      @paste="handleMarkdownPaste"
+    />
+    <div class="flex text-[10px] absolute -bottom-5 right-0">
+      <button
+        class="border px-2 py-0.5 rounded-bl border-r-0"
+        :class="{
+          'bg-gray-200': display_type === 'wysiwyg',
+        }"
+        @click="changeDisplayType('wysiwyg')"
+      >
+        WYSIWYG
+      </button>
+      <button
+        class="border px-2 py-0.5 rounded-br"
+        :class="{
+          'bg-gray-200': display_type === 'markdown',
+        }"
+        @click="changeDisplayType('markdown')"
+      >
+        Markdown
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted } from "vue";
+import { ref, onBeforeUnmount, onMounted, nextTick } from "vue";
 import ListItem from "@tiptap/extension-list-item";
 import TextStyle from "@tiptap/extension-text-style";
 import { EditorContent, Editor } from "@tiptap/vue-3";
@@ -26,10 +55,28 @@ import TiptapMenu from "./TiptapMenu.vue";
 import { ImagePlaceholder } from "./extensions/ImagePlaceholder";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { ResizableImage } from "./extensions/ResizableImage";
-import Color from '@tiptap/extension-color'
+import { Markdown } from "tiptap-markdown";
+import Color from "@tiptap/extension-color";
+import { Transaction } from 'prosemirror-state'
 
+/** editor */
 const editor = ref<Editor>();
 
+/** nội dung */
+const content = ref("<p>Hello Tiptap!</p>");
+
+/** loại hiển thị */
+const display_type = ref<"wysiwyg" | "markdown">("wysiwyg");
+
+const textarea = ref<HTMLTextAreaElement | null>(null);
+
+const autoResize = () => {
+  const el = textarea.value;
+  if (el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }
+};
 onMounted(() => {
   editor.value = new Editor({
     extensions: [
@@ -40,7 +87,7 @@ onMounted(() => {
       TaskList,
       TaskItem.configure({ nested: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Image,
+      Image.configure({ allowBase64: true }),
       Link,
       CodeBlock,
       Table.configure({ resizable: true }),
@@ -49,17 +96,30 @@ onMounted(() => {
       TableCell,
       ImagePlaceholder,
       ResizableImage,
+      Markdown.configure({
+        html: true,
+        tightLists: true,
+        bulletListMarker: "-",
+        linkify: true,
+        breaks: true,
+      }),
     ],
-    content: "<p>Hello Tiptap!</p>",
+    content: content.value,
     editorProps: {
       handleDOMEvents: {
         paste: (view, event) => {
           const items = event.clipboardData?.items || [];
 
+          let hasImage = false;
+
           for (const item of items) {
             if (item.type.startsWith("image")) {
+              hasImage = true;
+
               const file = item.getAsFile();
               if (!file) return false;
+
+              event.preventDefault();
 
               const id = `${Date.now()}-${Math.random()}`;
               const node = view.state.schema.nodes.imagePlaceholder.create({
@@ -78,9 +138,10 @@ onMounted(() => {
                   );
 
                   if (pos !== null) {
-                    const imageNode = view.state.schema.nodes.image.create({
-                      src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
-                    });
+                    const imageNode =
+                      view.state.schema.nodes.resizableImage.create({
+                        src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
+                      });
                     // Tạo transaction để thay thế node tại vị trí đã cho
                     const tr = view.state.tr.replaceRangeWith(
                       pos,
@@ -111,8 +172,75 @@ onMounted(() => {
         },
       },
     },
+    onUpdate: ({ editor }) => {},
   });
 });
+
+/** thay đổi loại hiển thị */
+function changeDisplayType(type: "wysiwyg" | "markdown") {
+  display_type.value = type;
+  if (type === "markdown") {
+    content.value = editor.value?.storage.markdown.getMarkdown() || "";
+    console.log(content.value);
+    
+    nextTick(() => {
+      autoResize();
+    });
+  } else {
+    editor.value?.commands.setContent(content.value);
+
+      nextTick(() => {
+        editor.value?.commands.command(({ tr }: { tr: Transaction}) => {
+          const doc = tr.doc // Lấy tài liệu từ Transaction
+          
+          doc.descendants((node, pos) => {
+            console.log(node, pos);
+            
+            if (node.type.name === "paragraph") {
+              tr.setNodeMarkup(pos, editor.value?.schema.nodes.resizableImage, {
+                ...node.attrs,
+                width: "100%",
+              });
+            }
+          });
+          editor.value?.view.dispatch(tr);
+          return true;
+        });
+      });
+    // Sau đó duyệt qua document và thay đổi node `image` thành `resizableImage`
+  }
+}
+
+function handleMarkdownPaste(event: ClipboardEvent) {
+  const items = Array.from(event.clipboardData?.items || []);
+  for (const item of items) {
+    if (item.type.indexOf("image") === 0) {
+      const file = item.getAsFile();
+      if (!file) return false;
+      uploadImage(file)
+        .then((url) => {
+          const imageMarkdown = `![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)`;
+          insertAtCursor(imageMarkdown);
+        })
+        .catch(() => {
+          console.error("Upload failed");
+        });
+    }
+  }
+}
+
+function insertAtCursor(text: string) {
+  const textarea = document.querySelector("textarea");
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const before = textarea.value.substring(0, start);
+  const after = textarea.value.substring(end);
+  textarea.value = before + text + after;
+  textarea.selectionStart = textarea.selectionEnd = start + text.length;
+  textarea.focus();
+}
 
 // 👉 Hàm upload giả lập
 function uploadImage(file: File): Promise<string> {
@@ -150,6 +278,7 @@ onBeforeUnmount(() => {
 </script>
 <style lang="scss">
 .tiptap {
+  min-height: 70px;
   padding: 10px 20px;
   outline: none;
   border: 1px solid #ccc;

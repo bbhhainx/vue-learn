@@ -51,6 +51,8 @@
     "quill-magic-url": "^4.2.0",
     "radix-vue": "^1.9.2",
     "tinymce": "^7.6.0",
+    "tiptap-extension-resizable-image": "^1.0.7",
+    "tiptap-markdown": "^0.8.10",
     "vue": "^3.4.31",
     "vue-cleave-component": "^3.0.2",
     "vue-virtual-scroll-list": "^2.3.5",

@@ -16,13 +16,13 @@ export const ImagePlaceholder = Node.create({
     }
   },
 
-  // parseHTML() {
-  //   return [{ tag: 'image-placeholder' }]
-  // },
+  parseHTML() {
+    return [{ tag: 'image-placeholder' }]
+  },
 
-  // renderHTML({ HTMLAttributes }) {
-  //   return ['image-placeholder', mergeAttributes(HTMLAttributes)]
-  // },
+  renderHTML({ HTMLAttributes }) {
+    return ['image-placeholder', mergeAttributes(HTMLAttributes)]
+  },
 
   addNodeView() {
     return VueNodeViewRenderer(ImagePlaceholderComponent)

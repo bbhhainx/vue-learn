@@ -162,8 +162,8 @@
     <!-- <button @click="setLink">
       <LinkIcon class="w-5 h-5" />
     </button> -->
-    <button>
-      <label class="w-5 h-5 flex justify-center gap-1 cursor-pointer flex-col">
+    <button class="relative">
+      <label class="w-5 h-5 flex justify-center gap-1 cursor-pointer flex-col ">
         <PaintIcon
           :style="`color: ${
             editor.getAttributes('textStyle')?.color || '000000'
@@ -172,7 +172,7 @@
         />
         <input
           type="color"
-          class="hidden"
+          class="w-0 h-0 absolute bottom-0 left-0"
           @input="(e:any) => e?.target?.value && editor.commands.setColor(e.target.value)"
         />
       </label>
@@ -344,7 +344,6 @@ function insertImage() {
           attrs: {
             src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
             alt: file.name,
-            width: "300px",
           },
         });
       })

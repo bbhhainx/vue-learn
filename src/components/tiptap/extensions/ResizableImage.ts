@@ -15,7 +15,7 @@ export const ResizableImage = Node.create({
       src: { default: null },
       alt: { default: null },
       width: {
-        default: '300px',
+        default: '100%',
         parseHTML: element => element.style.width || element.getAttribute('width'),
         renderHTML: attributes => ({
           style: `width: ${attributes.width}`,
@@ -41,7 +41,7 @@ export const ResizableImage = Node.create({
       const img = document.createElement('img')
       img.src = node.attrs.src
       img.alt = node.attrs.alt || ''
-      img.style.width = node.attrs.width || '300px'
+      img.style.width = node.attrs.width || '100%'
       img.style.display = 'block'
       img.style.maxWidth = '100%'
 
@@ -93,7 +93,7 @@ export const ResizableImage = Node.create({
           if (updatedNode.type.name !== 'resizableImage') return false
           if (updatedNode.attrs.src !== node.attrs.src) return false
           img.src = updatedNode.attrs.src
-          img.style.width = updatedNode.attrs.width || '300px'
+          img.style.width = updatedNode.attrs.width || '100%'
           return true
         },
       }
