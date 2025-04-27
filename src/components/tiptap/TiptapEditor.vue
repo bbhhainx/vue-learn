@@ -1,83 +1,61 @@
 <template>
   <div v-if="editor" class="relative flex flex-col">
     <TiptapMenu :editor="editor" :uploadImage="uploadImage" />
-    <EditorContent v-if="display_type === 'wysiwyg'" :editor="editor" />
-    <textarea
-      v-else
-      ref="textarea"
-      @input="autoResize"
-      class="w-full outline-none border px-5 py-2.5 border-gray-300 p-2 h-max overflow-hidden resize-none"
-      v-model="content"
-      placeholder="Nhập nội dung ở đây..."
-      @paste="handleMarkdownPaste"
-    />
-    <div class="flex text-[10px] absolute -bottom-5 right-0">
-      <button
-        class="border px-2 py-0.5 rounded-bl border-r-0"
-        :class="{
-          'bg-gray-200': display_type === 'wysiwyg',
-        }"
-        @click="changeDisplayType('wysiwyg')"
-      >
-        WYSIWYG
-      </button>
-      <button
-        class="border px-2 py-0.5 rounded-br"
-        :class="{
-          'bg-gray-200': display_type === 'markdown',
-        }"
-        @click="changeDisplayType('markdown')"
-      >
-        Markdown
-      </button>
-    </div>
+    <EditorContent :editor="editor" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, onMounted, nextTick } from "vue";
-import ListItem from "@tiptap/extension-list-item";
-import TextStyle from "@tiptap/extension-text-style";
-import { EditorContent, Editor } from "@tiptap/vue-3";
+// * libraries
+import Link from "@tiptap/extension-link";
+import { Markdown } from "tiptap-markdown";
+import Image from "@tiptap/extension-image";
+import Table from "@tiptap/extension-table";
+import Color from "@tiptap/extension-color";
 import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
-import Image from "@tiptap/extension-image";
-import Link from "@tiptap/extension-link";
-import CodeBlock from "@tiptap/extension-code-block";
-import Table from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
+import Underline from "@tiptap/extension-underline";
+import TextStyle from "@tiptap/extension-text-style";
+import TextAlign from "@tiptap/extension-text-align";
 import TableCell from "@tiptap/extension-table-cell";
+import CodeBlock from "@tiptap/extension-code-block";
+import { EditorContent, Editor } from "@tiptap/vue-3";
 import TableHeader from "@tiptap/extension-table-header";
-import TiptapMenu from "./TiptapMenu.vue";
-import { ImagePlaceholder } from "./extensions/ImagePlaceholder";
 import { Node as ProsemirrorNode } from "prosemirror-model";
+import { ref, onBeforeUnmount, onMounted, PropType } from "vue";
+
+// * custom extensions
 import { ResizableImage } from "./extensions/ResizableImage";
-import { Markdown } from "tiptap-markdown";
-import Color from "@tiptap/extension-color";
-import { Transaction } from 'prosemirror-state'
+import { ImagePlaceholder } from "./extensions/ImagePlaceholder";
+
+// * components
+import TiptapMenu from "./TiptapMenu.vue";
+
+/** props */
+const props = defineProps({
+  uploadImage: {
+    type: Function as PropType<(file: File) => Promise<string>>,
+    default: () => {},
+  },
+  type_content: {
+    type: String as PropType<"markdown" | "html">,
+    default: "html",
+  },
+});
 
 /** editor */
 const editor = ref<Editor>();
 
 /** nội dung */
-const content = ref("<p>Hello Tiptap!</p>");
+const content = defineModel({
+  type: String,
+  default: "",
+});
 
-/** loại hiển thị */
-const display_type = ref<"wysiwyg" | "markdown">("wysiwyg");
-
-const textarea = ref<HTMLTextAreaElement | null>(null);
-
-const autoResize = () => {
-  const el = textarea.value;
-  if (el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  }
-};
 onMounted(() => {
+  // khởi tạo editor
   editor.value = new Editor({
     extensions: [
       Color,
@@ -95,71 +73,101 @@ onMounted(() => {
       TableHeader,
       TableCell,
       ImagePlaceholder,
-      ResizableImage,
+      // ResizableImage,
       Markdown.configure({
         html: true,
         tightLists: true,
         bulletListMarker: "-",
         linkify: true,
         breaks: true,
+        transformPastedText:true
       }),
     ],
     content: content.value,
     editorProps: {
       handleDOMEvents: {
+        // sự kiện paste vào editor
         paste: (view, event) => {
-          const items = event.clipboardData?.items || [];
+          // nếu có ảnh trong clipboard
+          const ITEMS = event.clipboardData?.items || [];
 
-          let hasImage = false;
+          // cờ kiểm tra có ảnh không
+          let has_image = false;
 
-          for (const item of items) {
+          // lặp qua mảng dữ liệu trong clipboard
+          for (const item of ITEMS) {
+            // nếu có ảnh trong clipboard
             if (item.type.startsWith("image")) {
-              hasImage = true;
+              // bật cờ có ảnh
+              has_image = true;
 
-              const file = item.getAsFile();
-              if (!file) return false;
+              // lấy dữ liệu file ảnh đó
+              const FILE = item.getAsFile();
 
+              // nếu không có thì thôi
+              if (!FILE) return false;
+
+              // nếu có thì chặn hành động paste mặc định
               event.preventDefault();
 
-              const id = `${Date.now()}-${Math.random()}`;
-              const node = view.state.schema.nodes.imagePlaceholder.create({
-                id,
+              // tạo 1 id cho node
+              const ID = `${Date.now()}-${Math.random()}`;
+
+              // tạo 1 node chứa ảnh
+              const NODE = view.state.schema.nodes.imagePlaceholder.create({
+                id: ID,
               });
 
-              const tr = view.state.tr.replaceSelectionWith(node);
+              // tạo transaction cho editor
+              const tr = view.state.tr.replaceSelectionWith(NODE);
+
+              // thêm transaction vào editor để hiển thị
               view.dispatch(tr);
 
-              uploadImage(file)
+              // gọi hàm up ảnh truyền từ ngoài vào
+              props
+                .uploadImage(FILE)
                 .then((url) => {
-                  const pos = findNodePos(
+
+                  // tìm vị trí của node ảnh
+                  const POS = findNodePos(
                     view.state.doc,
-                    id,
+                    ID,
                     "imagePlaceholder"
                   );
 
-                  if (pos !== null) {
-                    const imageNode =
-                      view.state.schema.nodes.resizableImage.create({
-                        src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
+                  // nếu tìm thấy
+                  if (POS !== null) {
+                    // const imageNode =
+                    //   view.state.schema.nodes.resizableImage.create({
+                    //     src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
+                    //   });
+
+                    // tạo 1 node ảnh
+                    const IMAGE_NODE =
+                      view.state.schema.nodes.image.create({
+                        src: url,
                       });
+
                     // Tạo transaction để thay thế node tại vị trí đã cho
                     const tr = view.state.tr.replaceRangeWith(
-                      pos,
-                      pos + node.nodeSize,
-                      imageNode
+                      POS,
+                      POS + NODE.nodeSize,
+                      IMAGE_NODE
                     );
 
                     view.dispatch(tr);
                   }
                 })
                 .catch(() => {
-                  const pos = findNodePos(
+                  // nếu lỗi thì xóa node ảnh đã thêm
+                  const POS = findNodePos(
                     view.state.doc,
-                    id,
+                    ID,
                     "imagePlaceholder"
                   );
-                  if (pos !== null) {
-                    const tr = view.state.tr.delete(pos, pos + 1);
+                  if (POS !== null) {
+                    const tr = view.state.tr.delete(POS, POS + 1);
                     view.dispatch(tr);
                   }
                 });
@@ -172,86 +180,26 @@ onMounted(() => {
         },
       },
     },
-    onUpdate: ({ editor }) => {},
+    onUpdate: ({ editor }) => {
+      // cập nhật nội dung
+      updateContent()
+    },
   });
+
+  // cập nhật nội dung
+  updateContent()
 });
 
-/** thay đổi loại hiển thị */
-function changeDisplayType(type: "wysiwyg" | "markdown") {
-  display_type.value = type;
-  if (type === "markdown") {
-    content.value = editor.value?.storage.markdown.getMarkdown() || "";
-    console.log(content.value);
-    
-    nextTick(() => {
-      autoResize();
-    });
-  } else {
-    editor.value?.commands.setContent(content.value);
-
-      nextTick(() => {
-        editor.value?.commands.command(({ tr }: { tr: Transaction}) => {
-          const doc = tr.doc // Lấy tài liệu từ Transaction
-          
-          doc.descendants((node, pos) => {
-            console.log(node, pos);
-            
-            if (node.type.name === "paragraph") {
-              tr.setNodeMarkup(pos, editor.value?.schema.nodes.resizableImage, {
-                ...node.attrs,
-                width: "100%",
-              });
-            }
-          });
-          editor.value?.view.dispatch(tr);
-          return true;
-        });
-      });
-    // Sau đó duyệt qua document và thay đổi node `image` thành `resizableImage`
+/** hàm lưu lại giá trị theo kiểu dữ liệu được truyền vào */
+function updateContent() {
+  // nếu là markdown thì cập nhật nội dung markdown
+  if (props.type_content === "markdown") {
+    content.value = editor.value?.storage.markdown.getMarkdown() || '';
   }
-}
-
-function handleMarkdownPaste(event: ClipboardEvent) {
-  const items = Array.from(event.clipboardData?.items || []);
-  for (const item of items) {
-    if (item.type.indexOf("image") === 0) {
-      const file = item.getAsFile();
-      if (!file) return false;
-      uploadImage(file)
-        .then((url) => {
-          const imageMarkdown = `![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)`;
-          insertAtCursor(imageMarkdown);
-        })
-        .catch(() => {
-          console.error("Upload failed");
-        });
-    }
+  // nếu là html thì cập nhật nội dung html
+  else {
+    content.value = editor.value?.getHTML() || '';
   }
-}
-
-function insertAtCursor(text: string) {
-  const textarea = document.querySelector("textarea");
-  if (!textarea) return;
-
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const before = textarea.value.substring(0, start);
-  const after = textarea.value.substring(end);
-  textarea.value = before + text + after;
-  textarea.selectionStart = textarea.selectionEnd = start + text.length;
-  textarea.focus();
-}
-
-// 👉 Hàm upload giả lập
-function uploadImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const succeed = Math.random() > 0.2; // 80% success
-      if (succeed)
-        resolve(URL.createObjectURL(file)); // demo thôi, thay bằng link thật
-      else reject(new Error("Upload failed"));
-    }, 1500);
-  });
 }
 
 // 👉 Tìm vị trí node ảnh theo custom attr
@@ -272,6 +220,7 @@ function findNodePos(
 
   return foundPos;
 }
+
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });

@@ -42,6 +42,7 @@
     "element-tiptap": "^2.2.1",
     "lexical": "^0.23.1",
     "lodash": "^4.17.21",
+    "marked": "^15.0.11",
     "primeicons": "^7.0.0",
     "primevue": "^4.3.3",
     "print-js": "^1.6.0",
