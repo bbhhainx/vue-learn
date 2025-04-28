@@ -6,6 +6,12 @@
   />
   <br />
   <br />
+  <TiptapEditor
+    v-model="content"
+    :type_editor="'view'"
+  />
+  <br />
+  <br />
   <strong>Preview</strong>
   <ViewEditor :content="content" :type_content="'markdown'" />
   <br />
