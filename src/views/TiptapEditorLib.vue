@@ -7,7 +7,7 @@
   <br />
   <br />
   <TiptapEditor
-    :mode-value="content"
+    :model-value="content"
     :type_editor="'view'"
   />
   <br />
