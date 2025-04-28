@@ -7,7 +7,7 @@
   <br />
   <br />
   <TiptapEditor
-    v-model="content"
+    :mode-value="content"
     :type_editor="'view'"
   />
   <br />
