@@ -340,9 +340,9 @@ function insertImage() {
       ?.uploadImage(file)
       .then((url) => {
         props.editor.commands.insertContent({
-          type: "resizableImage",
+          type: "image",
           attrs: {
-            src: "https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp",
+            src: url,
             alt: file.name,
           },
         });
