@@ -1,4 +1,5 @@
-export const api_host: { [index: string]: { [index: string]: string } } = {
+/** các domain */
+export const HOST: { [index: string]: { [index: string]: string } } = {
   development: {
     contact: 'http://localhost:3005',
     product: 'http://localhost:3006',

@@ -1,4 +1,4 @@
-import { api_host } from "./host";
+import { HOST } from "./host";
 
 /** Kiểu dữ liệu của api base dùng chung */
 export interface IApiClient {
@@ -17,13 +17,13 @@ export class ApiClient implements IApiClient {
   /** hàm khởi tạo */
   constructor(domain: string) {
     /** biến môi truoừng */
-    const ENV = import.meta.env.MODE as keyof typeof api_host;
+    const ENV = import.meta.env.MODE as keyof typeof HOST;
 
-    console.log("ENV", ENV, api_host[ENV]);
+    console.log("ENV", ENV, HOST[ENV]);
     
 
     /** domain của api */
-    this.base_url = api_host[ENV]?.[domain] || "";
+    this.base_url = HOST[ENV]?.[domain] || "";
 
     /** headers mặc định của api */
     this.headers = { "Content-Type": "application/json" };
