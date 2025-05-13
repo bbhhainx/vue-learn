@@ -8,7 +8,7 @@ export interface IApiClient {
 
 
 /** class cơ sở cho các class api cho từng domain */
-export class ApiClient implements IApiClient {
+export class FetchApiClient implements IApiClient {
   /** domain */
   protected base_url: string;
   /** headers */
@@ -18,9 +18,6 @@ export class ApiClient implements IApiClient {
   constructor(domain: string) {
     /** biến môi truoừng */
     const ENV = import.meta.env.MODE as keyof typeof HOST;
-
-    console.log("ENV", ENV, HOST[ENV]);
-    
 
     /** domain của api */
     this.base_url = HOST[ENV]?.[domain] || "";
