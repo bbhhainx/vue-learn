@@ -16,6 +16,7 @@ import VueVirtualScroller from 'vue-virtual-scroller'
 // import 'primeicons/primeicons.css'
 
 // import 'element-tiptap/lib/style.css';
+import 'github-markdown-css/github-markdown.css'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 // import VirtualList from 'vue-virtual-scroll-list'
