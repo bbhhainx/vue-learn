@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 
-const FAKE_ORDERS = [
+const FAKE_ORDERS: Order[] = [
   {
     id: 1,
     customer_id: 101,
@@ -8,7 +8,7 @@ const FAKE_ORDERS = [
       id: 101,
       name: "Nguyễn Văn A",
       email: "nguyenvana@example.com",
-      phone: "0901234567"
+      phone: "0901234567",
     },
     products: [
       {
@@ -16,18 +16,22 @@ const FAKE_ORDERS = [
         name: "Áo thun",
         price: 150000,
         description: "Áo thun cotton 100%",
-        category: "Thời trang"
+        category: "Thời trang",
+        quantity: 1,
+        total_price: 150000,
       },
       {
         id: 202,
         name: "Quần jeans",
         price: 300000,
         description: "Quần jeans nam",
-        category: "Thời trang"
-      }
+        category: "Thời trang",
+        quantity: 2,
+        total_price: 300000,
+      },
     ],
-    total_price: 450000,
-    status: "pending"
+    total_price: 750000,
+    status: "pending",
   },
   {
     id: 2,
@@ -36,7 +40,7 @@ const FAKE_ORDERS = [
       id: 102,
       name: "Trần Thị B",
       email: "tranthib@example.com",
-      phone: "0912345678"
+      phone: "0912345678",
     },
     products: [
       {
@@ -44,13 +48,89 @@ const FAKE_ORDERS = [
         name: "Giày thể thao",
         price: 500000,
         description: "Giày thể thao nữ",
-        category: "Thời trang"
-      }
+        category: "Thời trang",
+        quantity: 2,
+        total_price: 500000,
+      },
     ],
-    total_price: 500000,
-    status: "completed"
-  }
-]
+    total_price: 1000000,
+    status: "completed",
+  },
+];
+
+// Mảng sản phẩm
+const FAKE_PRODUCTS: Product[] = [
+  {
+    id: 1,
+    name: "Áo thun nam cổ tròn",
+    price: 250000,
+    description: "Áo thun nam chất liệu cotton 100%, thấm hút mồ hôi tốt.",
+    category: "Thời trang nam",
+  },
+  {
+    id: 2,
+    name: "Giày sneaker nữ",
+    price: 750000,
+    description: "Giày sneaker nữ phong cách Hàn Quốc, đế cao su chống trượt.",
+    category: "Giày dép",
+  },
+  {
+    id: 3,
+    name: "Tai nghe Bluetooth",
+    price: 1200000,
+    description: "Tai nghe Bluetooth không dây, thời lượng pin lên đến 8 giờ.",
+    category: "Điện tử",
+  },
+  {
+    id: 4,
+    name: "Balo laptop 15 inch",
+    price: 450000,
+    description:
+      "Balo chống sốc, phù hợp với laptop 15 inch, nhiều ngăn tiện lợi.",
+    category: "Phụ kiện",
+  },
+  {
+    id: 5,
+    name: 'Sách "Đắc nhân tâm"',
+    price: 98000,
+    description: "Cuốn sách kinh điển về nghệ thuật giao tiếp và ứng xử.",
+    category: "Sách",
+  },
+];
+
+// Mảng khách hàng
+const FAKE_CUSTOMER: Customer[] = [
+  {
+    id: 101,
+    name: "Nguyễn Văn A",
+    email: "nguyenvana@example.com",
+    phone: "0901234567",
+  },
+  {
+    id: 102,
+    name: "Trần Thị B",
+    email: "tranthib@example.com",
+    phone: "0912345678",
+  },
+  {
+    id: 103,
+    name: "Lê Văn C",
+    email: "levanc@example.com",
+    phone: "0923456789",
+  },
+  {
+    id: 104,
+    name: "Phạm Thị D",
+    email: "phamthid@example.com",
+    phone: "0934567890",
+  },
+  {
+    id: 105,
+    name: "Hoàng Văn E",
+    email: "hoangvane@example.com",
+    phone: "0945678901",
+  },
+];
 
 /** Dữ liệu của sản phẩm */
 export interface Product {
@@ -64,6 +144,14 @@ export interface Product {
   description?: string;
   /** Danh mục mà sản phẩm thuộc về */
   category?: string;
+}
+
+/** Dữ liệu sản phẩm trong đơn hàng */
+export interface OrderProduct extends Product {
+  /** Số lượng sản phẩm trong đơn hàng */
+  quantity?: number;
+  /** Tổng giá trị của sản phẩm trong đơn hàng */
+  total_price?: number;
 }
 
 /** Dữ liệu của khách hàng */
@@ -87,7 +175,7 @@ export interface Order {
   /** Thông tin chi tiết của khách hàng */
   customer?: Customer;
   /** Danh sách các sản phẩm trong đơn hàng */
-  products?: Product[];
+  products?: OrderProduct[];
   /** Tổng giá trị của đơn hàng */
   total_price?: number;
   /** Trạng thái hiện tại của đơn hàng (ví dụ: 'pending', 'completed', 'cancelled') */
@@ -119,7 +207,7 @@ interface OrderService {
   /** Tạo một đơn hàng mới */
   createOrder: (order: Order) => Order;
   /** Cập nhật thông tin đơn hàng */
-  updateOrder: (id: number, order: Order) => Order;
+  updateOrder: (order: Order) => Order;
   /** Tính tổng giá trị của các sản phẩm trong đơn hàng */
   calculateTotalPrice: (products: Product[]) => number;
 }
@@ -128,123 +216,165 @@ interface OrderService {
 interface OrderOperationFacade {
   /** Lấy các dữ liệu cần thiết cho đơn hàng */
   init: () => void;
-  /** Chọn một đơn hàng */
-  selectAnOrder: (order: Order) => void;
+  /** Chọn 1 đơn hàng */
+  selectAnOrder: (order: Order) => Order;
+  /** Lấy thông tin đơn hàng theo id */
+  getOrderById: (id: number, orders?: Order[]) => Order;
   /** Thêm sản phẩm vào đơn hàng */
-  addProductToOrder: (orderId: number, product: Product) => Order;
+  addProductToOrder: (order: Order, product: Product) => Order;
   /** Xóa sản phẩm khỏi đơn hàng */
-  removeProductFromOrder: (orderId: number, productId: number) => Order;
+  removeProductFromOrder: (order: Order, productId: number) => Order;
+  /** Tính toán lại giá trị của đơn hàng */
+  calculateOrderTotalPrice: (order: Order) => number;
 }
 
 /** Các logic liên quan đến sản phẩm */
 export class ProductServiceImpl implements ProductService {
   getProductById(id: number) {
-    return {};
+    return FAKE_PRODUCTS.find((product) => product.id === id) || {};
   }
   getProducts() {
-    return [];
+    return FAKE_PRODUCTS;
   }
 }
 
 /** Các logic liên quan đến khách hàng */
 export class CustomerServiceImpl implements CustomerService {
   getCustomerById(id: number) {
-    return {};
+    return FAKE_CUSTOMER.find((customer) => customer.id === id) || {};
   }
   getCustomers() {
-    return [];
+    return FAKE_CUSTOMER;
   }
 }
 
 /** Các logic liên quan đến đơn hàng */
 export class OrderServiceImpl implements OrderService {
   getOrderById(id: number) {
-    return {};
+    return FAKE_ORDERS.find((order) => order.id === id) || {};
   }
   getOrders() {
     return FAKE_ORDERS;
   }
   createOrder(order: Order) {
+    FAKE_ORDERS.push(order);
+    return {
+      order,
+      id: FAKE_ORDERS.length,
+      status: "pending",
+    };
+  }
+  updateOrder(order: Order) {
+    FAKE_ORDERS.map((o) => (o.id === order.id ? order : o));
     return order;
   }
-  updateOrder(id: number, order: Order) {
-    return order;
-  }
-
-  calculateTotalPrice(products: Product[]) {
-    return products.reduce((total, product) => total + (product.price || 0), 0);
+  calculateTotalPrice(products: OrderProduct[]) {
+    return products.reduce(
+      (total, product) =>
+        total + (product.price || 0) * (product.quantity || 0),
+      0
+    );
   }
 }
 
 /** Facade cho các hoạt động liên quan đến đơn hàng */
 export class OrderOperationFacadeImpl implements OrderOperationFacade {
   constructor(
-    private readonly productService: ProductService,
-    private readonly customerService: CustomerService,
-    private readonly orderService: OrderService,
-    private order: Ref<Order>,
-    private orders: Ref<Order[]>,
-    private customers: Ref<Customer[]>,
-    private products: Ref<Product[]>
-  ) {
-    this.productService = productService;
-    this.customerService = customerService;
-    this.orderService = orderService;
-    this.order.value = order.value;
-    this.customers.value = customers.value;
-    this.products.value = products.value;
-  }
+    private readonly productService: ProductService = new ProductServiceImpl(),
+    private readonly customerService: CustomerService = new CustomerServiceImpl(),
+    private readonly orderService: OrderService = new OrderServiceImpl()
+  ) {}
 
   init() {
-    this.orders.value = this.orderService.getOrders();
-    this.customers.value = this.customerService.getCustomers();
-    this.products.value = this.productService.getProducts();
+    /** danh sách đơn hàng */
+    const ORDERS = this.orderService.getOrders();
+    /** danh sách khách hàng */
+    const CUSTOMERS = this.customerService.getCustomers();
+    /** danh sách sản phẩm */
+    const PRODUCTS = this.productService.getProducts();
+    return {
+      orders: ORDERS,
+      customers: CUSTOMERS,
+      products: PRODUCTS,
+    };
   }
 
   selectAnOrder(order: Order) {
-    // lưu lại giá trị của đơn hàng đã chọn
-    this.order.value = order
-
-    // nếu có id khách hàng, lấy thông tin khách hàng
-    if (this.order.value.customer_id) {
-      this.order.value.customer = this.customerService.getCustomerById(
-        this.order.value.customer_id
-      );
+    // lấy thông tin khách hàng liên quan đến đơn hàng
+    if (order.customer_id) {
+      order.customer = this.customerService.getCustomerById(order.customer_id);
     }
+
+    return order;
   }
 
-  addProductToOrder(order_id: number, product: Product) {
-    // nếu chưa có danh sách sản phẩm, khởi tạo mảng
-    if (!this.order.value.products?.length) {
-      this.order.value.products = [];
-    }
-    // thêm sản phẩm vào đơn hàng
-    this.order.value.products.push(product);
-    
-    // tính lại tổng giá trị của đơn hàng
-    this.order.value.total_price = this.orderService.calculateTotalPrice(
-      this.order.value.products
-    );
+  getOrderById(id: number, orders?: Order[]) {
+    /** tìm trong mảng đang có sẵn trước */
+    let order: Order | undefined = orders?.find((order) => order.id === id);
+
+    /** nếu có thì trả về luôn */
+    if (order) return order;
+
+    // lấy thông tin đơn hàng theo id
+    order = this.orderService.getOrderById(id);
+
+    return this.selectAnOrder(order);
+  }
+
+  addProductToOrder(order: Order, product: Product) {
+    /** danh sách đơn hàng hiện tại */
+    let products = order.products || [];
+
+    // thêm sản phẩm vào danh sách đơn hàng
+    products.push({
+      ...product,
+      quantity: 1,
+      total_price: product.price || 0,
+    });
+
+    /** giá trị đơn hàng sau khi thêm sản phẩm */
+    const TOTAL_PRICE = this.orderService.calculateTotalPrice(products);
+
+    // đơn hàng sau khi thêm sản phẩm
+    const NEW_ORDER: Order = {
+      ...order,
+      products: products,
+      total_price: TOTAL_PRICE,
+    };
 
     // cập nhật đơn hàng
-    return this.orderService.updateOrder(order_id, this.order.value);
+    return this.orderService.updateOrder(NEW_ORDER);
   }
 
-  removeProductFromOrder(order_id: number, product_id: number) {
+  removeProductFromOrder(order: Order, index: number) {
+    /** danh sách đơn hàng hiện tại */
+    let products = order.products || [];
+
     // nếu không có sản phẩm nào trong đơn hàng, trả về đơn hàng hiện tại
-    if (!this.order.value.products?.length) return this.order.value;
+    if (!products?.length) return order;
 
-    // lọc bỏ sản phẩm có id tương ứng
-    this.order.value.products = this.order.value.products.filter((p) => p.id !== product_id);
+    // xóa sản phẩm có index tương ứng
+    products.splice(index, 1);
 
-    // tính lại tổng giá trị của đơn hàng
-    this.order.value.total_price = this.orderService.calculateTotalPrice(
-      this.order.value.products
-    );
+    /** tổng tiền đơn hàng sau khi xóa sản phẩm */
+    const TOTAL_PRICE = this.orderService.calculateTotalPrice(products);
+
+    /** đơn hàng sau khi xóa sản phẩm */
+    const NEW_ORDER: Order = {
+      ...order,
+      products: products,
+      total_price: TOTAL_PRICE,
+    };
 
     // cập nhật đơn hàng
-    return this.orderService.updateOrder(order_id, this.order.value);
+    return this.orderService.updateOrder(NEW_ORDER);
+  }
+
+  calculateOrderTotalPrice(order: Order) {
+    /** danh sách sản phẩm trong đơn hàng */
+    const PRODUCTS = order.products || [];
+
+    // tính tổng giá trị của đơn hàng
+    return this.orderService.calculateTotalPrice(PRODUCTS);
   }
 }
-
-

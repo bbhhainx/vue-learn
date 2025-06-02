@@ -8,7 +8,8 @@
   <!-- <TiptapEditor /> -->
   <!-- <TiptapEditorLib /> -->
   <!-- <Respository /> -->
-  <RenderMarkdown />
+  <!-- <RenderMarkdown /> -->
+  <FacadeOrder />
 </template>
 
 <script setup lang="ts">
@@ -20,4 +21,5 @@ import Input from "./views/Input.vue";
 import TiptapEditor from "./views/TiptapEditor.vue";
 import TiptapEditorLib from "./views/TiptapEditorLib.vue";
 import RenderMarkdown from "./views/RenderMarkdown.vue";
+import FacadeOrder from "./views/FacadeOrder.vue";
 </script>
