@@ -6,10 +6,10 @@
   <!-- <ExampleBuilder /> -->
   <!-- <ExampleBuilder2 /> -->
   <!-- <TiptapEditor /> -->
-  <!-- <TiptapEditorLib /> -->
+  <TiptapEditorLib />
   <!-- <Respository /> -->
   <!-- <RenderMarkdown /> -->
-  <FacadeOrder />
+  <!-- <FacadeOrder /> -->
 </template>
 
 <script setup lang="ts">

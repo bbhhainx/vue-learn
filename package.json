@@ -43,6 +43,7 @@
     "element-plus": "^2.9.7",
     "element-tiptap": "^2.2.1",
     "github-markdown-css": "^5.8.1",
+    "interactjs": "^1.10.27",
     "lexical": "^0.23.1",
     "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",
