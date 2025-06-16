@@ -1,7 +1,7 @@
 <template>
   <div class="outer-container">
     <div 
-      class="zoom-wrapper" 
+      class="zoom-wrapper w-full overflow-x-auto overflow-y-hidden" 
       ref="zoomWrapper"
       :style="{ minHeight: wrapperHeight + 'px' }"
     >
@@ -36,11 +36,6 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 const scale = ref(1);
 const wrapperHeight = ref(300);
 const initialDistance = ref(null);
-const isDragging = ref(false);
-const startX = ref(0);
-const startY = ref(0);
-const scrollLeft = ref(0);
-const scrollTop = ref(0);
 
 const zoomWrapper = ref(null);
 const content = ref(null);
@@ -60,13 +55,6 @@ const updateWrapperHeight = () => {
       // Tính toán chiều cao chính xác sau khi zoom
       const contentHeight = content.value.scrollHeight;
       wrapperHeight.value = contentHeight * scale.value;
-      
-      // Debug thông tin
-      // console.log('Updated wrapper height:', {
-      //   scale: scale.value,
-      //   contentHeight,
-      //   wrapperHeight: wrapperHeight.value
-      // });
     }
   });
 };
