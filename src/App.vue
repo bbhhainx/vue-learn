@@ -6,14 +6,14 @@
   <!-- <ExampleBuilder /> -->
   <!-- <ExampleBuilder2 /> -->
   <!-- <TiptapEditor /> -->
-  <!-- <TiptapEditorLib /> -->
+  <TiptapEditorLib />
   <!-- <Respository /> -->
   <!-- <RenderMarkdown /> -->
   <!-- <FacadeOrder /> -->
-  <div class="w-dvh h-dvh overflow-auto">
+  <!-- <div class="w-dvh h-dvh overflow-auto">
     <Zoom>
     </Zoom>
-  </div>
+  </div> -->
 </template>
 
 <script setup lang="ts">

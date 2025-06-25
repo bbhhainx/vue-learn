@@ -8,24 +8,13 @@
   <br /> -->
 
   <button class="bg-red-100 h-dvh w-dvw overflow-auto p-4 flex flex-col">
-    <div
-      class="overflow-hidden flex justify-center items-center bg-white flex-shrink-0 w-full"
-    >
-      <div
-        class="w-full"
-        id="gesture-area"
-        ref="gesture_area"
-      >
-        <div
-          id="scale-element"
-          ref="scale_element"
-          class="bg-slate-100 w-full"
-        >
-          <TiptapEditor :model-value="content" :type_editor="'view'" />
-        </div>
-      </div>
+    <div class="max-w-[700px] m-auto top-0 bottom-0 left-0 right-0">
+      <TiptapEditor
+        :model-value="content"
+        :type_editor="'view'"
+        @click="onEditorClick"
+      />
     </div>
-    <div class="bg-blue-700 min-h-[500px] w-full"></div>
   </button>
   <!-- <div id="gesture-area">
     <div class="w-[50dvw] h-[50dvh] rounded-full bg-red-500" id="scale-element"></div>
@@ -39,6 +28,30 @@
   <br />
   <strong>Nội dung raw</strong>
   <p>{{ content }}</p> -->
+  <div
+    @click="show_image = false"
+    v-if="show_image"
+    class="bg-black/20 h-dvh w-dvw flex justify-center items-center fixed top-0 left-0 touch-none"
+  >
+    <div
+      class="flex justify-center items-center flex-shrink-0 w-full"
+    >
+      <div class="w-full" id="gesture-area" ref="gesture_area">
+        <div
+          id="scale-element"
+          ref="scale_element"
+          class="w-fit"
+        >
+        <img
+          @click.stop
+          :src="selected_img"
+          alt=""
+          class="max-h-[95dvh] max-w-[95dvw] m-auto"
+        />
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -57,8 +70,29 @@ const getHello = () => {
   return hello;
 };
 
+// Bắt sự kiện click
+const onEditorClick = (event: MouseEvent) => {
+  const target = event.target as HTMLElement;
+  if (target.tagName === "IMG") {
+    selected_img.value = target.getAttribute("src") || "";
+    show_image.value = true;
+  }
+};
+
 /** nội dung */
-const content = ref(getHello());
+const content =
+  ref(`![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)
+  \n ảnh 1
+  ![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)
+  \n ảnh 2
+  ![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)
+  \n ảnh 3
+  ![image](https://cubanvr.com/wp-content/uploads/2023/07/ai-image-generators.webp)
+`);
+
+const selected_img = ref("");
+
+const show_image = ref(false);
 
 watch(
   () => content.value,
@@ -93,6 +127,74 @@ let reset_timeout: number | undefined;
 
 onMounted(async () => {
   // đợi chờ DOM cập nhật
+  await nextTick();
+
+  // nếu không có gesture_area thì không thôi
+  if (!gesture_area.value || !scale_element.value) return;
+
+  alert("Click vào ảnh để phóng to");
+
+  interact(gesture_area.value)
+    .gesturable({
+      listeners: {
+        start(event) {
+          // xoá timeout nếu có
+          clearTimeout(reset_timeout);
+
+          // xoá class reset nếu có
+          scale_element.value?.classList.remove("reset");
+        },
+        move(event) {
+          // nếu không có phần tử cần zoom thì không làm gì
+          if (!scale_element.value) return;
+
+          /** tỉ lệ scale hiện tại */
+          const CURRENT_SCALE = event.scale * scale.value;
+
+          // cập nhật tỉ lệ zoom
+          scale_element.value.style.transform =
+            "scale(" + Math.max(CURRENT_SCALE, 1) + ")";
+
+          // cập nhật vị trí của phần tử đang zoom
+          dragMoveListener(event);
+        },
+        end(event) {
+          // nếu không có phần tử cần zoom thì không làm gì
+          if (!scale_element.value) return;
+
+          // cập nhật tỉ lệ zoom
+          scale.value = scale.value * event.scale;
+
+          // sau 300ms thì reset vị trí và tỉ lệ zoom
+          // reset_timeout = setTimeout(reset, 300);
+
+          // thêm class reset để có hiệu ứng
+          scale_element.value.classList.add("reset");
+
+          setTimeout(() => {
+            scale_element.value?.blur();
+          }, 300);
+        },
+      },
+    })
+    .draggable({
+      listeners: {
+        start(event) {},
+        move: dragMoveListener,
+        end(event) {
+          setTimeout(() => {
+            scale_element.value?.blur();
+          }, 300);
+        },
+      },
+    });
+});
+
+watch(
+  () => show_image.value,
+  async (newValue) => {
+    if(!newValue) return 
+    // đợi chờ DOM cập nhật
   await nextTick();
 
   // nếu không có gesture_area thì không thôi
@@ -152,7 +254,8 @@ onMounted(async () => {
         },
       },
     });
-});
+  }
+)
 
 /** hàm reset tỉ lệ zoom */
 function reset() {
