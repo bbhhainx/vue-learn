@@ -88,7 +88,7 @@
     </button>
     <button
       @click="command('toggleUnderline')"
-      :class="{ active: editor?.isActive('italic') }"
+      :class="{ active: editor?.isActive('underline') }"
     >
       <UnderlineIcon class="w-5 h-5" />
     </button>

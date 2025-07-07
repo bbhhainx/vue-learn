@@ -14,3 +14,5 @@ declare module "vue-cleave-component" {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+declare module 'turndown-plugin-gfm'

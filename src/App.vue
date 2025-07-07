@@ -10,6 +10,7 @@
   <!-- <Respository /> -->
   <!-- <RenderMarkdown /> -->
   <!-- <FacadeOrder /> -->
+  <!-- <TiptapEditorV2 /> -->
   <!-- <div class="w-dvh h-dvh overflow-auto">
     <Zoom>
     </Zoom>
@@ -27,4 +28,5 @@ import TiptapEditorLib from "./views/TiptapEditorLib.vue";
 import RenderMarkdown from "./views/RenderMarkdown.vue";
 import FacadeOrder from "./views/FacadeOrder.vue";
 import Zoom from "../src/components/Zoom.vue";
+import TiptapEditorV2 from "./views/TiptapEditorV2.vue";
 </script>
