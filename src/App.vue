@@ -6,7 +6,7 @@
   <!-- <ExampleBuilder /> -->
   <!-- <ExampleBuilder2 /> -->
   <!-- <TiptapEditor /> -->
-  <TiptapEditorLib />
+  <!-- <TiptapEditorLib /> -->
   <!-- <Respository /> -->
   <!-- <RenderMarkdown /> -->
   <!-- <FacadeOrder /> -->
@@ -15,6 +15,7 @@
     <Zoom>
     </Zoom>
   </div> -->
+  <Chart/>
 </template>
 
 <script setup lang="ts">
@@ -29,4 +30,5 @@ import RenderMarkdown from "./views/RenderMarkdown.vue";
 import FacadeOrder from "./views/FacadeOrder.vue";
 import Zoom from "../src/components/Zoom.vue";
 import TiptapEditorV2 from "./views/TiptapEditorV2.vue";
+import Chart from "./views/Chart.vue";
 </script>
